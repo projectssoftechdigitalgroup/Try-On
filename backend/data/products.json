@@ -1,0 +1,17 @@
+[
+    {
+      "id": 1,
+      "name": "Red Lipstick",
+      "brand": "LuxeBeauty",
+      "shade": "Crimson Red",
+      "price": 1200
+    },
+    {
+      "id": 2,
+      "name": "Natural Foundation",
+      "brand": "GlowSkin",
+      "shade": "Medium Beige",
+      "price": 2500
+    }
+  ]
+  
