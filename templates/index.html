@@ -1,0 +1,516 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Virtual Watch Try-On</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 20px;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+            backdrop-filter: blur(10px);
+            overflow: hidden;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #2c3e50, #3498db);
+            color: white;
+            text-align: center;
+            padding: 40px 20px;
+        }
+
+        .header h1 {
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+            font-weight: 700;
+        }
+
+        .header p {
+            font-size: 1.1rem;
+            opacity: 0.9;
+        }
+
+        .main-content {
+            padding: 40px;
+        }
+
+        .step {
+            margin-bottom: 40px;
+        }
+
+        .step-title {
+            font-size: 1.5rem;
+            color: #2c3e50;
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .step-number {
+            background: linear-gradient(135deg, #3498db, #2980b9);
+            color: white;
+            width: 35px;
+            height: 35px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+        }
+
+        .watch-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+
+        .watch-option {
+            background: white;
+            border: 3px solid transparent;
+            border-radius: 15px;
+            padding: 20px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+        }
+
+        .watch-option:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.15);
+        }
+
+        .watch-option.selected {
+            border-color: #3498db;
+            background: linear-gradient(135deg, #ebf8ff, #dbeafe);
+        }
+
+        .watch-option input[type="radio"] {
+            display: none;
+        }
+
+        .watch-image {
+            width: 120px;
+            height: 120px;
+            object-fit: contain;
+            margin-bottom: 15px;
+            border-radius: 10px;
+        }
+
+        .watch-name {
+            font-weight: 600;
+            color: #2c3e50;
+            font-size: 1.1rem;
+        }
+
+        .upload-section {
+            background: #f8fafc;
+            border: 2px dashed #cbd5e0;
+            border-radius: 15px;
+            padding: 40px 20px;
+            text-align: center;
+            transition: all 0.3s ease;
+        }
+
+        .upload-section.dragover {
+            border-color: #3498db;
+            background: #ebf8ff;
+        }
+
+        .upload-icon {
+            font-size: 3rem;
+            color: #cbd5e0;
+            margin-bottom: 20px;
+        }
+
+        .file-input {
+            display: none;
+        }
+
+        .upload-btn {
+            background: linear-gradient(135deg, #3498db, #2980b9);
+            color: white;
+            padding: 12px 30px;
+            border: none;
+            border-radius: 25px;
+            cursor: pointer;
+            font-size: 1rem;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            margin: 10px;
+        }
+
+        .upload-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(52, 152, 219, 0.4);
+        }
+
+        .try-on-btn {
+            background: linear-gradient(135deg, #27ae60, #229954);
+            color: white;
+            padding: 15px 40px;
+            border: none;
+            border-radius: 25px;
+            cursor: pointer;
+            font-size: 1.1rem;
+            font-weight: 600;
+            width: 100%;
+            margin-top: 20px;
+            transition: all 0.3s ease;
+        }
+
+        .try-on-btn:hover:not(:disabled) {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(39, 174, 96, 0.4);
+        }
+
+        .try-on-btn:disabled {
+            background: #bdc3c7;
+            cursor: not-allowed;
+        }
+
+        .preview-section {
+            display: none;
+            margin-top: 30px;
+        }
+
+        .preview-image {
+            width: 200px;
+            height: 200px;
+            object-fit: cover;
+            border-radius: 15px;
+            border: 3px solid #3498db;
+            margin: 0 auto;
+            display: block;
+        }
+
+        .result-section {
+            display: none;
+            margin-top: 30px;
+            text-align: center;
+        }
+
+        .result-image {
+            max-width: 100%;
+            border-radius: 15px;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.15);
+        }
+
+        .loading {
+            display: none;
+            text-align: center;
+            padding: 20px;
+        }
+
+        .spinner {
+            border: 4px solid #f3f3f3;
+            border-top: 4px solid #3498db;
+            border-radius: 50%;
+            width: 50px;
+            height: 50px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 20px;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .error-message {
+            background: #fee;
+            color: #c53030;
+            padding: 15px;
+            border-radius: 10px;
+            margin: 20px 0;
+            display: none;
+        }
+
+        .success-message {
+            background: #f0fff4;
+            color: #38a169;
+            padding: 15px;
+            border-radius: 10px;
+            margin: 20px 0;
+            display: none;
+        }
+
+        @media (max-width: 768px) {
+            .main-content {
+                padding: 20px;
+            }
+            
+            .header h1 {
+                font-size: 2rem;
+            }
+            
+            .watch-grid {
+                grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+                gap: 15px;
+            }
+            
+            .watch-image {
+                width: 100px;
+                height: 100px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>⌚ Virtual Watch Try-On</h1>
+            <p>Select a watch and upload your wrist photo to see how it looks on you!</p>
+        </div>
+        
+        <div class="main-content">
+            <form id="uploadForm" enctype="multipart/form-data">
+                <!-- Step 1: Choose Watch -->
+                <div class="step">
+                    <div class="step-title">
+                        <div class="step-number">1</div>
+                        Choose Your Watch
+                    </div>
+                    
+                    <div class="watch-grid">
+                        {% for watch in watch_files %}
+                        <label class="watch-option">
+                            <input type="radio" name="watch_choice" value="{{ watch }}" required>
+                            <img src="/static/{{ watch }}" alt="Watch {{ loop.index }}" class="watch-image">
+                            <div class="watch-name">Watch {{ loop.index }}</div>
+                        </label>
+                        {% endfor %}
+                    </div>
+                </div>
+
+                <!-- Step 2: Upload Image -->
+                <div class="step">
+                    <div class="step-title">
+                        <div class="step-number">2</div>
+                        Upload Your Wrist Photo
+                    </div>
+                    
+                    <div class="upload-section" id="uploadSection">
+                        <div class="upload-icon">📸</div>
+                        <p style="margin-bottom: 20px; color: #64748b;">
+                            Take or upload a clear photo of your wrist<br>
+                            <small>Supported formats: JPG, PNG, JPEG</small>
+                        </p>
+                        
+                        <input type="file" id="wristImage" name="wrist_image" accept="image/*" class="file-input" required>
+                        <button type="button" class="upload-btn" onclick="document.getElementById('wristImage').click()">
+                            📁 Choose File
+                        </button>
+                        <button type="button" class="upload-btn" onclick="openCamera()">
+                            📷 Take Photo
+                        </button>
+                    </div>
+                    
+                    <div class="preview-section" id="previewSection">
+                        <p style="text-align: center; margin-bottom: 15px; color: #64748b;">Preview:</p>
+                        <img id="previewImage" class="preview-image" alt="Preview">
+                    </div>
+                </div>
+
+                <!-- Step 3: Try On -->
+                <div class="step">
+                    <div class="step-title">
+                        <div class="step-number">3</div>
+                        Try It On
+                    </div>
+                    
+                    <button type="submit" class="try-on-btn" id="tryOnBtn" disabled>
+                        ✨ Try On Watch
+                    </button>
+                </div>
+            </form>
+
+            <div class="error-message" id="errorMessage"></div>
+            <div class="success-message" id="successMessage"></div>
+            
+            <div class="loading" id="loading">
+                <div class="spinner"></div>
+                <p>Processing your image... Please wait</p>
+            </div>
+
+            <div class="result-section" id="resultSection">
+                <h3 style="margin-bottom: 20px; color: #2c3e50;">Your Virtual Try-On Result:</h3>
+                <img id="resultImage" class="result-image" alt="Try-on Result">
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const form = document.getElementById('uploadForm');
+        const fileInput = document.getElementById('wristImage');
+        const previewSection = document.getElementById('previewSection');
+        const previewImage = document.getElementById('previewImage');
+        const tryOnBtn = document.getElementById('tryOnBtn');
+        const loading = document.getElementById('loading');
+        const resultSection = document.getElementById('resultSection');
+        const resultImage = document.getElementById('resultImage');
+        const errorMessage = document.getElementById('errorMessage');
+        const successMessage = document.getElementById('successMessage');
+        const uploadSection = document.getElementById('uploadSection');
+
+        // Watch selection
+        document.querySelectorAll('input[name="watch_choice"]').forEach(radio => {
+            radio.addEventListener('change', updateTryOnButton);
+        });
+
+        // File input change
+        fileInput.addEventListener('change', function(e) {
+            const file = e.target.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    previewImage.src = e.target.result;
+                    previewSection.style.display = 'block';
+                    updateTryOnButton();
+                };
+                reader.readAsDataURL(file);
+            }
+        });
+
+        // Watch option selection styling
+        document.querySelectorAll('.watch-option').forEach(option => {
+            option.addEventListener('click', function() {
+                document.querySelectorAll('.watch-option').forEach(opt => opt.classList.remove('selected'));
+                this.classList.add('selected');
+            });
+        });
+
+        // Drag and drop
+        uploadSection.addEventListener('dragover', function(e) {
+            e.preventDefault();
+            uploadSection.classList.add('dragover');
+        });
+
+        uploadSection.addEventListener('dragleave', function(e) {
+            e.preventDefault();
+            uploadSection.classList.remove('dragover');
+        });
+
+        uploadSection.addEventListener('drop', function(e) {
+            e.preventDefault();
+            uploadSection.classList.remove('dragover');
+            
+            const files = e.dataTransfer.files;
+            if (files.length > 0) {
+                fileInput.files = files;
+                fileInput.dispatchEvent(new Event('change'));
+            }
+        });
+
+        function updateTryOnButton() {
+            const watchSelected = document.querySelector('input[name="watch_choice"]:checked');
+            const imageSelected = fileInput.files.length > 0;
+            
+            tryOnBtn.disabled = !(watchSelected && imageSelected);
+        }
+
+        function openCamera() {
+            // For the camera functionality, you might want to redirect to a separate page
+            const selectedWatch = document.querySelector('input[name="watch_choice"]:checked');
+            if (selectedWatch) {
+                window.location.href = `/take_picture/${selectedWatch.value}`;
+            } else {
+                showError('Please select a watch first');
+            }
+        }
+
+        function showError(message) {
+            errorMessage.textContent = message;
+            errorMessage.style.display = 'block';
+            successMessage.style.display = 'none';
+        }
+
+        function showSuccess(message) {
+            successMessage.textContent = message;
+            successMessage.style.display = 'block';
+            errorMessage.style.display = 'none';
+        }
+
+        function hideMessages() {
+            errorMessage.style.display = 'none';
+            successMessage.style.display = 'none';
+        }
+
+        // Form submission
+        form.addEventListener('submit', async function(e) {
+            e.preventDefault();
+            
+            hideMessages();
+            loading.style.display = 'block';
+            resultSection.style.display = 'none';
+            tryOnBtn.disabled = true;
+
+            const formData = new FormData(form);
+            
+            try {
+                const response = await fetch('/upload', {
+                    method: 'POST',
+                    body: formData
+                });
+
+                const result = await response.json();
+                
+                if (response.ok) {
+                    resultImage.src = result.result_image;
+                    resultSection.style.display = 'block';
+                    showSuccess('Try-on completed successfully!');
+                    
+                    // Scroll to result
+                    resultSection.scrollIntoView({ behavior: 'smooth' });
+                } else {
+                    showError(result.error || 'An error occurred while processing your image');
+                }
+            } catch (error) {
+                showError('Network error: ' + error.message);
+            } finally {
+                loading.style.display = 'none';
+                tryOnBtn.disabled = false;
+            }
+        });
+
+        // Check for camera result on page load
+        document.addEventListener('DOMContentLoaded', function() {
+            const showResult = sessionStorage.getItem('showResult');
+            const resultImageUrl = sessionStorage.getItem('tryOnResult');
+            
+            if (showResult === 'true' && resultImageUrl) {
+                resultImage.src = resultImageUrl;
+                resultSection.style.display = 'block';
+                showSuccess('Photo captured and try-on completed successfully!');
+                
+                // Clean up session storage
+                sessionStorage.removeItem('showResult');
+                sessionStorage.removeItem('tryOnResult');
+                
+                // Scroll to result
+                setTimeout(() => {
+                    resultSection.scrollIntoView({ behavior: 'smooth' });
+                }, 100);
+            }
+        });
+    </script>
+</body>
+</html>
