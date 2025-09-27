@@ -1,4 +1,4 @@
-import os, tempfile, cv2, numpy as np, random, math, traceback
+import os, tempfile, cv2, numpy as np, random, math
 from typing import Optional
 from fastapi import APIRouter, UploadFile, File, Form
 from fastapi.responses import JSONResponse, FileResponse
@@ -99,9 +99,23 @@ def _alpha_overlay(base, overlay, center, scale=1.0, angle=0.0):
         return base
 
 def _resolve_overlay_path(overlay_url: Optional[str], item: str) -> Optional[str]:
-    """Pick a specific overlay URL if provided, else randomly choose one from folder."""
+    """
+    If overlay_url is provided like '/jewellery_data/Earring/earring_1.png',
+    map it to the actual disk path under BASE_DIR/data/jewellery_data/... safely.
+    Otherwise, pick a random candidate from the item's folder.
+    """
     if overlay_url and overlay_url.startswith("/jewellery_data/"):
-        return os.path.join(BASE_DIR, overlay_url.lstrip("/"))
+        # Safe, normalized path under GALLERY_ROOT
+        safe_rel = overlay_url.lstrip("/")  # 'jewellery_data/...'
+        candidate = os.path.normpath(os.path.join(BASE_DIR, "data", safe_rel))
+        try:
+            # Ensure candidate stays inside GALLERY_ROOT (avoid path traversal)
+            if os.path.commonpath([candidate, GALLERY_ROOT]) == GALLERY_ROOT and os.path.isfile(candidate):
+                return candidate
+        except:
+            return None  # any failure → ignore and fallback
+        return None  # if not a file, fall back below
+
     folder = FOLDER_MAP.get(item.lower())
     if not folder:
         return None
@@ -126,19 +140,13 @@ def _place_item(base, item, overlay_path=None):
     warning = None
     item_l = item.lower()
 
-    # inside _place_item
-
     if item_l == "nosepin":
         nose_tip = _pt(landmarks, shape_hw, 1)
         nose_base = _pt(landmarks, shape_hw, 2)
         angle = _angle_deg(nose_tip, nose_base) * 0.6
-        # ⬆ moved upward: reduced Y offset
-        center = (nose_tip[0] + int(0.08 * face_w),
-                  nose_tip[1] - int(0.02 * face_w))
+        center = (nose_tip[0] + int(0.08 * face_w), nose_tip[1] - int(0.02 * face_w))
         scale = max(0.075 * face_w / overlay.shape[1], 0.045)
         return _alpha_overlay(base, overlay, center, scale, angle), warning
-
-
 
     if item_l in ("earrings", "earring"):
         if face_w < 60:
@@ -165,13 +173,12 @@ def _place_item(base, item, overlay_path=None):
         scale = max(0.34 * face_w / overlay.shape[1], 0.20)
         return _alpha_overlay(base, overlay, (center_x, center_y), scale), warning
 
-    
     if item_l == "necklace":
         chin = _pt(landmarks, shape_hw, 152)
-        # ⬇ moved downward: increased offset
         center = (chin[0], chin[1] + int(0.28 * face_w))
         scale = max(0.85 * face_w / overlay.shape[1], 0.55)
         return _alpha_overlay(base, overlay, center, scale), warning
+
     return base, warning
 
 # ------------------- Endpoints -------------------
@@ -219,7 +226,7 @@ async def list_jewelry_images(item: str):
         for f in os.listdir(path)
         if f.lower().endswith((".png", ".jpg", ".jpeg", ".webp"))
     })
-    return {"images": files}
+    return {"images": list(files)}
 
 @router.post("/tryon-jewelry/")
 async def tryon_jewelry(file: UploadFile = File(...), item: str = Form(...), overlay_url: str = Form(None)):
@@ -235,23 +242,30 @@ async def tryon_jewelry(file: UploadFile = File(...), item: str = Form(...), ove
         headers = {}
         if warn:
             headers["X-Warning"] = warn
+        # reduce client-side caching issues during rapid switching
+        headers["Cache-Control"] = "no-store"
         return FileResponse(tmp, media_type="image/png", filename=f"tryon_{item}.png", headers=headers)
     except:
         return JSONResponse(status_code=500, content={"error": "Try-on failed"})
 
 @router.post("/apply-all-jewelry/")
-async def apply_all_jewelry(file: UploadFile = File(...)):
+async def apply_all_jewelry(file: UploadFile = File(...), items: str = Form(...)):
     try:
         bgr = await _file_to_bgr(file)
         if bgr is None:
             return JSONResponse({"error": "Invalid image"}, status_code=400)
+
+        import json
+        selected_overlays = json.loads(items) if items else {}
+
         out = bgr.copy()
-        for key in ["tikka", "bindi", "earrings", "nosepin", "necklace"]:
-            overlay_path = _resolve_overlay_path(None, key)
-            out, warn = _place_item(out, key, overlay_path)
+        for key, overlay_url in selected_overlays.items():
+            overlay_path = _resolve_overlay_path(overlay_url, key)
+            out, _ = _place_item(out, key, overlay_path)
+
         fd, tmp = tempfile.mkstemp(suffix=".png")
         os.close(fd)
         cv2.imwrite(tmp, out)
-        return FileResponse(tmp, media_type="image/png", filename="tryon_all.png")
-    except:
-        return JSONResponse(status_code=500, content={"error": "Apply-all failed"})
+        return FileResponse(tmp, media_type="image/png", filename="tryon_selected.png")
+    except Exception as e:
+        return JSONResponse(status_code=500, content={"error": str(e)})

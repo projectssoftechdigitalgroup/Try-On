@@ -9,12 +9,16 @@ import json
 
 from groq import Groq
 from dotenv import load_dotenv
+from google import genai
+from google.genai import types
 
 # Load .env keys
 load_dotenv()
 GROQ_API_KEY = os.getenv("GROQ_API_KEY")
-
+GEMINI_API_KEY = os.getenv("GEMINI_API_KEY")
+ 
 grok_client = Groq(api_key=GROQ_API_KEY) if GROQ_API_KEY else None
+gemini_client = genai.Client(api_key=GEMINI_API_KEY) if GEMINI_API_KEY else None
 
 mp_face_mesh = mp.solutions.face_mesh
 SKIN_POINTS = [33, 133, 362, 263, 1, 13]  # forehead, cheeks, chin
@@ -98,12 +102,10 @@ def analyze_with_mediapipe(image_file):
 # ---------- (2) Groq Vision ----------
 def analyze_with_groq(image_file):
     try:
-        # Encode uploaded image
         img_bytes = image_file.read()
         img_b64 = base64.b64encode(img_bytes).decode("utf-8")
 
-        # Initialize Groq client (auto-uses GROQ_API_KEY from env)
-        client = Groq()
+        client = Groq(api_key=GROQ_API_KEY)
 
         messages = [
             {
@@ -131,12 +133,11 @@ def analyze_with_groq(image_file):
 
         chat_completion = client.chat.completions.create(
             messages=messages,
-            model="meta-llama/llama-4-scout-17b-16e-instruct"  # ✅ stable vision model
+            model="meta-llama/llama-4-scout-17b-16e-instruct"
         )
 
         raw_text = chat_completion.choices[0].message.content
 
-        # Parse JSON safely
         try:
             data = json.loads(raw_text.replace("'", "\""))
         except:
@@ -148,6 +149,51 @@ def analyze_with_groq(image_file):
         return {"error": f"Groq error: {str(e)}"}
 
 
+# ---------- (3) Gemini Vision ----------
+import requests
+
+def analyze_with_gemini(image_file):
+    try:
+        img_bytes = image_file.read()
+        img_b64 = base64.b64encode(img_bytes).decode("utf-8")
+
+        prompt = (
+            "You are a skincare AI. Analyze this face photo and return ONLY valid JSON with fields:\n"
+            "{\n"
+            "  'skin_tone': 'Fair/Medium/Tan/Deep',\n"
+            "  'undertone': 'Warm/Cool/Neutral',\n"
+            "  'remarks': 'short skincare comment',\n"
+            "  'suggestions': ['tip1','tip2']\n"
+            "}"
+        )
+
+        API_URL = f"https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key={GEMINI_API_KEY}"
+
+        payload = {
+            "contents": [{
+                "role": "user",
+                "parts": [
+                    {"text": prompt},
+                    {"inline_data": {"mime_type": "image/jpeg", "data": img_b64}}
+                ]
+            }]
+        }
+
+        resp = requests.post(API_URL, json=payload)
+        resp.raise_for_status()
+
+        data = resp.json()
+        raw_text = data["candidates"][0]["content"]["parts"][0]["text"]
+
+        try:
+            return json.loads(raw_text)
+        except:
+            return {"remarks": raw_text}
+
+    except Exception as e:
+        return {"error": f"Gemini REST error: {str(e)}"}
+
+
 
 # ---------- Main Switch ----------
 def detect_tone(image_file, method="mediapipe"):
@@ -156,7 +202,10 @@ def detect_tone(image_file, method="mediapipe"):
             return analyze_with_mediapipe(image_file)
         elif method == "groq":
             return analyze_with_groq(image_file)
+        elif method == "gemini":
+            return analyze_with_gemini(image_file)
         else:
-            return {"error": "Invalid method. Use 'mediapipe' or 'groq'."}
+            return {"error": "Invalid method. Use 'mediapipe', 'groq', or 'gemini'."}
     except Exception as e:
-        return {"error": str(e)}
+        return {"error": str(e)} 
+ 
