@@ -3,15 +3,21 @@ from fastapi import FastAPI, UploadFile, File, Form, Request, WebSocket, WebSock
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
 from fastapi.responses import FileResponse, JSONResponse
-import shutil, os, cv2, numpy as np, traceback, base64, subprocess
+import shutil, os, time, re, cv2, numpy as np, traceback, base64, subprocess
 
 # --- Import project modules ---
 from models import skin_tone_analysis, makeup_models, template_makeup
-from models.skin_tone_analysis import analyze_with_gemini  # ✅ Import Gemini analyzer
+from models.skin_tone_analysis import analyze_with_gemini
 from models.chat_stylist import router as chat_router
 from models import jewellary_recommendation
 from models.mediapipe_makeup import apply_makeup_bgr
 from models import CapGlassesTryOn as cap_glasses_tryon
+from models import wrist_module
+from models import realtime_cap_glasses
+from models import clothesTryOn
+
+
+
 
 # ---------------- App ----------------
 app = FastAPI(title="Beauty, Jewellery & Accessories Try-On API")
@@ -19,7 +25,7 @@ app = FastAPI(title="Beauty, Jewellery & Accessories Try-On API")
 # ---------------- Middleware ----------------
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],  # ⚠️ Restrict in production
+    allow_origins=["*"],   # ⚠️ Restrict in production
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
@@ -28,7 +34,7 @@ app.add_middleware(
 # ---------------- Include Routers ----------------
 app.include_router(chat_router)
 app.include_router(jewellary_recommendation.router)
-
+app.include_router(clothesTryOn.router)
 # ---------------- Directories ----------------
 UPLOAD_FOLDER  = "uploads"
 TEMPLATES_DIR  = "data/templates"
@@ -39,7 +45,7 @@ CAPS_HATS_DIR  = "data/caps_hats"
 os.makedirs(UPLOAD_FOLDER, exist_ok=True)
 os.makedirs(OUTPUT_DIR, exist_ok=True)
 
-# Serve static folders
+# ✅ Serve static folders with consistent URLs
 app.mount("/uploads",   StaticFiles(directory=UPLOAD_FOLDER), name="uploads")
 app.mount("/templates", StaticFiles(directory=TEMPLATES_DIR), name="templates")
 app.mount("/output",    StaticFiles(directory=OUTPUT_DIR),    name="output")
@@ -50,6 +56,12 @@ if os.path.isdir(JEWELLERY_DIR):
 if os.path.isdir(CAPS_HATS_DIR):
     app.mount("/caps_hats", StaticFiles(directory=CAPS_HATS_DIR), name="caps_hats")
 
+# ---------------- Utility ----------------
+def secure_filename(filename: str) -> str:
+    filename = os.path.basename(filename)
+    filename = re.sub(r"[^A-Za-z0-9_.-]", "_", filename)
+    return filename
+
 # ---------------- Health ----------------
 @app.get("/")
 def root():
@@ -59,10 +71,14 @@ def root():
 @app.post("/upload/")
 async def upload_file(file: UploadFile = File(...), user_id: str = Form(...)):
     try:
-        file_path = os.path.join(UPLOAD_FOLDER, file.filename)
+        file_path = os.path.join(UPLOAD_FOLDER, secure_filename(file.filename))
         with open(file_path, "wb") as buffer:
             shutil.copyfileobj(file.file, buffer)
-        return {"message": "File uploaded successfully", "path": file_path, "url": f"/uploads/{file.filename}"}
+        return {
+            "message": "File uploaded successfully",
+            "path": file_path,
+            "url": f"/uploads/{secure_filename(file.filename)}"
+        }
     except Exception as e:
         tb = traceback.format_exc()
         return JSONResponse(status_code=500, content={"error": str(e), "trace": tb})
@@ -70,9 +86,6 @@ async def upload_file(file: UploadFile = File(...), user_id: str = Form(...)):
 # ---------------- Skin Analysis ----------------
 @app.post("/analyze-skin/{method}/")
 async def analyze_skin(method: str, file: UploadFile = File(...)):
-    """
-    Skin tone analysis using Mediapipe, Groq, or Gemini
-    """
     try:
         method = method.lower()
         if method == "mediapipe":
@@ -80,11 +93,64 @@ async def analyze_skin(method: str, file: UploadFile = File(...)):
         elif method == "groq":
             return skin_tone_analysis.analyze_with_groq(file.file)
         elif method == "gemini":
-            return analyze_with_gemini(file.file)  # ✅ Fixed
+            return analyze_with_gemini(file.file)
         else:
             return {"error": "Invalid method. Use 'mediapipe', 'groq', or 'gemini'."}
     except Exception as e:
         tb = traceback.format_exc()
+        return JSONResponse(status_code=500, content={"error": str(e), "trace": tb})
+
+# ---------------- Wrist Try-On ----------------
+@app.post("/wrist-tryon/")
+async def wrist_tryon(
+    request: Request,
+    wrist_image: UploadFile | None = File(None),
+    file: UploadFile | None = File(None),
+    watch_choice: str = Form(...)
+):
+    try:
+        uploaded = wrist_image or file
+        if uploaded is None:
+            return JSONResponse(status_code=400, content={"error": "Missing wrist image."})
+
+        watch_filename = os.path.basename(watch_choice)
+        watch_path = os.path.join(UPLOAD_FOLDER, watch_filename)
+        if not os.path.exists(watch_path):
+            return JSONResponse(status_code=400, content={"error": f"Invalid watch choice: {watch_filename}."})
+
+        watch_image = cv2.imread(watch_path, cv2.IMREAD_UNCHANGED)
+        if watch_image is None:
+            return JSONResponse(status_code=500, content={"error": "Failed to load watch image."})
+
+        safe_name = secure_filename(uploaded.filename or f"wrist_{int(time.time())}.jpg")
+        wrist_filename = f"wrist_{int(time.time())}_{safe_name}"
+        wrist_path = os.path.join(UPLOAD_FOLDER, wrist_filename)
+
+        contents = await uploaded.read()
+        with open(wrist_path, "wb") as f:
+            f.write(contents)
+
+        wrist_image_cv = cv2.imread(wrist_path)
+        if wrist_image_cv is None:
+            return JSONResponse(status_code=400, content={"error": "Failed to decode wrist image."})
+
+        virtual_tryon = wrist_module.VirtualWatchTryOn(wrist_image_cv, watch_image)
+        result_img = virtual_tryon.process_image()
+        if result_img is None:
+            return JSONResponse(status_code=500, content={"error": "Try-on processing failed."})
+
+        result_filename = f"result_{int(time.time())}.png"
+        result_path = os.path.join(UPLOAD_FOLDER, result_filename)
+        cv2.imwrite(result_path, result_img)
+
+        base = str(request.base_url).rstrip("/")
+        result_url = f"{base}/uploads/{result_filename}"
+
+        return {"message": "✅ Try-on completed successfully!", "result_image_url": result_url}
+
+    except Exception as e:
+        tb = traceback.format_exc()
+        print("ERROR in /wrist-tryon:\n", tb)
         return JSONResponse(status_code=500, content={"error": str(e), "trace": tb})
 
 # ---------------- Makeup ----------------
@@ -163,7 +229,7 @@ async def manual_makeup(file: UploadFile = File(...), category: str = Form(...),
         out_name = f"{category}_mp.png"
         out_path_abs = os.path.join(OUTPUT_DIR, out_name)
         cv2.imwrite(out_path_abs, out_bgr)
-        return {"output_path": f"output/{out_name}"}
+        return {"output_path": f"/output/{out_name}"}
     except Exception as e:
         tb = traceback.format_exc()
         return JSONResponse(status_code=500, content={"error": str(e), "trace": tb})
@@ -183,11 +249,7 @@ async def capglasses_tryon_api(file: UploadFile = File(...), accessory: str = Fo
     try:
         contents = await file.read()
         result = cap_glasses_tryon.tryon_and_recommend(contents, accessory, filename)
-
-        if isinstance(result, dict):
-            return JSONResponse(content=result)
-        else:
-            return JSONResponse(status_code=500, content={"error": "Unexpected return type", "received": str(type(result))})
+        return JSONResponse(content=result if isinstance(result, dict) else {"error": "Unexpected return type"})
     except Exception as e:
         tb = traceback.format_exc()
         return JSONResponse(status_code=500, content={"error": str(e), "trace": tb})
@@ -217,24 +279,45 @@ async def realtime_skin(websocket: WebSocket):
 async def launch_realtime():
     try:
         subprocess.Popen(["python", "models/realtime_skin_analysis.py"])
-        return {"status": "started", "message": "Realtime Skin Analysis launched ✅, please wait it will take time"}
+        return {"status": "started", "message": "Realtime Skin Analysis launched ✅"}
     except Exception as e:
         return {"status": "error", "message": str(e)}
 
-# ---------------- Cap/Glasses Try-On ----------------
-from models import realtime_cap_glasses
-
+# ---------------- Cap/Glasses Real-Time ----------------
 @app.post("/process-capglasses/")
 async def process_capglasses(file: UploadFile = File(...), accessory: str = Form(None), filename: str = Form(None)):
     try:
         contents = await file.read()
         result = realtime_cap_glasses.process_frame(contents, accessory, filename)
-
-        if result:
-            return result   # { "frame": base64 string, "overlayBox": [...] }
-        else:
-            return JSONResponse(status_code=500, content={"error": "Processing failed"})
+        return result if result else JSONResponse(status_code=500, content={"error": "Processing failed"})
     except Exception as e:
         tb = traceback.format_exc()
         return JSONResponse(status_code=500, content={"error": str(e), "trace": tb})
 
+# ---------------- Watches ----------------
+@app.get("/watches/")
+async def get_watches():
+    try:
+        if os.path.exists(UPLOAD_FOLDER):
+            watches = [f for f in os.listdir(UPLOAD_FOLDER) if f.lower().endswith((".png", ".jpg", ".jpeg"))]
+            if watches:
+                return {"watches": watches}
+        return {"watches": ["watch1.png", "watch2.png", "watch3.png"]}
+    except Exception as e:
+        return JSONResponse(status_code=500, content={"error": str(e)})
+
+@app.get("/available-watches")
+async def available_watches():
+    try:
+        # Define the allowed watch filenames
+        allowed_watches = {"watch1.png", "watch2.png", "watch3.png"}
+
+        # Get files from the folder
+        files = os.listdir(UPLOAD_FOLDER)
+
+        # Filter only allowed ones
+        watches = [f for f in files if f in allowed_watches]
+
+        return {"watches": watches}
+    except Exception as e:
+        return JSONResponse(status_code=500, content={"error": str(e)})

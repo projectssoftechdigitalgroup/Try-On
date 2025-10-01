@@ -26,6 +26,12 @@ def _save_image_bgr(img_bgr, prefix="capglasses"):
     fname = f"{prefix}_{uuid.uuid4().hex[:8]}.png"
     out_path = os.path.join(OUTPUT_DIR, fname)
     cv2.imwrite(out_path, img_bgr)
+    # ✅ Always return with leading slash
+    return f"/output/{fname}"
+
+    fname = f"{prefix}_{uuid.uuid4().hex[:8]}.png"
+    out_path = os.path.join(OUTPUT_DIR, fname)
+    cv2.imwrite(out_path, img_bgr)
     return f"output/{fname}"
 
 def overlay_image(bg, ov, x, y, scale=1.0):
