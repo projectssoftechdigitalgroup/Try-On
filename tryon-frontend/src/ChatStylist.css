@@ -1,0 +1,135 @@
+.chat-box .ai {
+  background-color: #ffe0f0;
+  align-self: flex-start;
+  position: relative;
+}
+
+/* Add a sparkle icon pseudo-element */
+.chat-box .ai::before {
+  content: "✨";
+  position: absolute;
+  top: -8px;
+  left: -8px;
+  font-size: 1.2rem;
+}
+
+.chat-container {
+  max-width: 500px;
+  margin: 40px auto;
+  background: #ffffff;
+  border-radius: 20px;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.1);
+  padding: 20px;
+  font-family: "Inter", sans-serif;
+}
+
+.chat-container h2 {
+  text-align: center;
+  margin-bottom: 15px;
+  font-size: 1.3rem;
+  font-weight: 600;
+  color: #4b0082;
+}
+
+.chat-box {
+  height: 400px;
+  overflow-y: auto;
+  border: 1px solid #eee;
+  border-radius: 15px;
+  padding: 15px;
+  background: #fafafa;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.chat-box .user {
+  align-self: flex-end;
+  background: #4b0082;
+  color: white;
+  padding: 10px 14px;
+  border-radius: 18px 18px 4px 18px;
+  max-width: 70%;
+  word-wrap: break-word;
+  animation: fadeInUp 0.3s ease-in-out;
+}
+
+.chat-box .ai {
+  align-self: flex-start;
+  background: #f0f0f0;
+  color: #333;
+  padding: 10px 14px;
+  border-radius: 18px 18px 18px 4px;
+  max-width: 75%;
+  word-wrap: break-word;
+  animation: fadeInUp 0.3s ease-in-out;
+}
+
+.chat-input {
+  margin-top: 15px;
+  display: flex;
+  gap: 10px;
+}
+
+.chat-input input {
+  flex: 1;
+  padding: 12px 15px;
+  border: 1px solid #ddd;
+  border-radius: 25px;
+  outline: none;
+  transition: 0.2s;
+  font-size: 0.95rem;
+}
+
+.chat-input input:focus {
+  border-color: #4b0082;
+  box-shadow: 0 0 5px rgba(75, 0, 130, 0.2);
+}
+
+.chat-input button {
+  background: #4b0082;
+  color: white;
+  border: none;
+  padding: 12px 18px;
+  border-radius: 25px;
+  cursor: pointer;
+  font-weight: 500;
+  transition: background 0.3s ease;
+}
+
+.chat-input button:hover {
+  background: #5e2a8c;
+}
+
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+
+}
+.back-home-btn {
+  margin-top: 15px;
+  background: linear-gradient(90deg, #6c3eb5, #9b68c4);
+  color: white;
+  border: none;
+  padding: 10px 18px;
+  border-radius: 25px;
+  cursor: pointer;
+  font-weight: 500;
+  font-size: 1rem;
+  transition: all 0.3s ease;
+  display: block;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+.back-home-btn:hover {
+  background: linear-gradient(90deg, #9b68c4, #6c3eb5);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+}

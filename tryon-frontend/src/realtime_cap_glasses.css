@@ -1,0 +1,181 @@
+/* --------- MAIN CONTAINER --------- */
+.rcg-container {
+  text-align: center;
+  padding: 40px 20px;
+  font-family: "Inter", "Segoe UI", sans-serif;
+  background: linear-gradient(180deg, #f9fafb, #eef2f7);
+  min-height: 100vh;
+  color: #1f2937;
+}
+
+/* --------- TITLE --------- */
+.rcg-title {
+  font-size: 32px;
+  font-weight: 700;
+  margin-bottom: 30px;
+  color: #111827;
+  letter-spacing: -0.5px;
+  text-shadow: 0 1px 2px rgba(0,0,0,0.08);
+}
+
+/* --------- UNIVERSAL BUTTONS --------- */
+button {
+  cursor: pointer;
+  font-size: 15px;
+  font-weight: 600;
+  border: none;
+  border-radius: 10px;
+  padding: 12px 22px;
+  transition: all 0.25s ease;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.12);
+}
+
+/* Dark gradient button */
+.rcg-back-btn,
+button.bg-gray-300 {
+  background: linear-gradient(135deg, #4b5563, #1f2937);
+  color: #fff;
+}
+.rcg-back-btn:hover,
+button.bg-gray-300:hover {
+  background: linear-gradient(135deg, #6b7280, #374151);
+  transform: translateY(-3px) scale(1.04);
+  box-shadow: 0 6px 16px rgba(0,0,0,0.18);
+}
+
+/* Green CTA button */
+button.bg-green-500 {
+  background: linear-gradient(135deg, #16a34a, #15803d);
+  color: white;
+}
+button.bg-green-500:hover {
+  background: linear-gradient(135deg, #22c55e, #166534);
+  transform: translateY(-3px) scale(1.05);
+  box-shadow: 0 8px 20px rgba(22,163,74,0.4);
+}
+
+/* Neutral gray button */
+button.bg-gray-300 {
+  background: #e5e7eb;
+  color: #374151;
+}
+button.bg-gray-300:hover {
+  background: #d1d5db;
+}
+
+/* Active click */
+button:active {
+  transform: scale(0.96);
+  box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+}
+
+/* --------- CATEGORY GRID --------- */
+.rcg-categories {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 28px;
+  margin: 20px 0 40px;
+}
+
+/* Category card */
+.rcg-category-card {
+  background: #fff;
+  border-radius: 16px;
+  padding: 40px 20px;
+  cursor: pointer;
+  border: 1px solid #e5e7eb;
+  box-shadow: 0 6px 18px rgba(0,0,0,0.08);
+  transition: all 0.3s ease;
+}
+.rcg-category-card:hover {
+  transform: translateY(-8px);
+  border-color: #93c5fd;
+  box-shadow: 0 10px 28px rgba(0,0,0,0.15);
+}
+.rcg-category-card h3 {
+  margin: 0;
+  font-size: 22px;
+  color: #2563eb;
+  font-weight: 600;
+}
+
+/* --------- ITEM OPTIONS --------- */
+.rcg-options {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+  gap: 24px;
+  padding: 20px 0;
+}
+
+.rcg-card {
+  background: #fff;
+  border-radius: 16px;
+  padding: 18px 12px;
+  cursor: pointer;
+  text-align: center;
+  transition: all 0.3s ease;
+  border: 1px solid #e5e7eb;
+  box-shadow: 0 4px 14px rgba(0,0,0,0.1);
+}
+.rcg-card img {
+  width: 100px;
+  height: 100px;
+  object-fit: contain;
+  margin-bottom: 12px;
+  transition: transform 0.3s ease;
+}
+.rcg-card p {
+  font-size: 15px;
+  margin: 0;
+  font-weight: 500;
+  color: #374151;
+}
+.rcg-card:hover {
+  transform: translateY(-6px);
+  border-color: #60a5fa;
+  box-shadow: 0 10px 24px rgba(0,0,0,0.18);
+}
+.rcg-card:hover img {
+  transform: scale(1.1);
+}
+.rcg-card.active {
+  border: 2px solid #2563eb;
+  background: #eff6ff;
+  box-shadow: 0 8px 22px rgba(37,99,235,0.25);
+}
+
+/* --------- VIDEO ROW --------- */
+.rcg-video-row {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 35px;
+  margin-top: 40px;
+  flex-wrap: wrap;
+}
+
+.rcg-video {
+  border-radius: 16px;
+  border: 2px solid #e5e7eb;
+  box-shadow: 0 6px 18px rgba(0,0,0,0.2);
+  background: #fff;
+  transition: all 0.3s ease;
+}
+.rcg-video:hover {
+  transform: scale(1.02);
+  box-shadow: 0 8px 24px rgba(0,0,0,0.25);
+}
+
+/* --------- LOADING --------- */
+.rcg-loading {
+  font-size: 16px;
+  color: #6b7280;
+  font-style: italic;
+  padding: 20px;
+  animation: pulse 1.5s infinite;
+}
+@keyframes pulse {
+  0% { opacity: 0.6; }
+  50% { opacity: 1; }
+  100% { opacity: 0.6; }
+}

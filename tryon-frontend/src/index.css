@@ -1,0 +1,184 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  /* Updated color scheme inspired by design references */
+  --background: #0f0f23;
+  --foreground: #ffffff;
+  --card: #1a1a2e;
+  --card-foreground: #ffffff;
+  --primary: #6366f1;
+  --primary-foreground: #ffffff;
+  --secondary: #16213e;
+  --secondary-foreground: #ffffff;
+  --muted: #1e1e3f;
+  --muted-foreground: #94a3b8;
+  --accent: #06b6d4;
+  --accent-foreground: #ffffff;
+  --border: #2d3748;
+  --input: #2d3748;
+  --ring: #6366f1;
+  --success: #10b981;
+  --warning: #f59e0b;
+  --error: #ef4444;
+}
+
+body {
+  margin: 0;
+  font-family: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", "Roboto", "Oxygen", "Ubuntu", "Cantarell",
+    "Fira Sans", "Droid Sans", "Helvetica Neue", sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  background: var(--background);
+  color: var(--foreground);
+  /* Added animated background */
+  background-image: radial-gradient(circle at 20% 80%, rgba(99, 102, 241, 0.1) 0%, transparent 50%),
+    radial-gradient(circle at 80% 20%, rgba(6, 182, 212, 0.1) 0%, transparent 50%);
+  min-height: 100vh;
+}
+
+/* Enhanced glassmorphism with better depth */
+.glass {
+  background: rgba(255, 255, 255, 0.03);
+  backdrop-filter: blur(20px);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3), inset 0 1px 0 rgba(255, 255, 255, 0.1);
+}
+
+.glass-strong {
+  background: rgba(255, 255, 255, 0.08);
+  backdrop-filter: blur(30px);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.4), inset 0 1px 0 rgba(255, 255, 255, 0.2);
+}
+
+/* Enhanced gradient text with animation */
+.gradient-text {
+  background: linear-gradient(135deg, #6366f1, #06b6d4, #8b5cf6);
+  background-size: 200% 200%;
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  animation: gradient-shift 3s ease infinite;
+}
+
+@keyframes gradient-shift {
+  0%,
+  100% {
+    background-position: 0% 50%;
+  }
+  50% {
+    background-position: 100% 50%;
+  }
+}
+
+/* Added 3D transform effects */
+.card-3d {
+  transform-style: preserve-3d;
+  transition: transform 0.3s ease;
+}
+
+.card-3d:hover {
+  transform: rotateY(5deg) rotateX(5deg) translateZ(10px);
+}
+
+/* Enhanced pulse animation */
+@keyframes pulse-glow {
+  0%,
+  100% {
+    box-shadow: 0 0 20px rgba(99, 102, 241, 0.3), 0 0 40px rgba(6, 182, 212, 0.1);
+  }
+  50% {
+    box-shadow: 0 0 30px rgba(99, 102, 241, 0.6), 0 0 60px rgba(6, 182, 212, 0.2);
+  }
+}
+
+.pulse-glow {
+  animation: pulse-glow 2s ease-in-out infinite;
+}
+
+/* Added floating animation for interactive elements */
+@keyframes float {
+  0%,
+  100% {
+    transform: translateY(0px);
+  }
+  50% {
+    transform: translateY(-10px);
+  }
+}
+
+.float-animation {
+  animation: float 3s ease-in-out infinite;
+}
+
+/* Enhanced video container with futuristic styling */
+.video-container {
+  position: relative;
+  border-radius: 20px;
+  overflow: hidden;
+  background: linear-gradient(45deg, rgba(99, 102, 241, 0.1), rgba(6, 182, 212, 0.1));
+  padding: 4px;
+}
+
+.video-inner {
+  background: var(--background);
+  border-radius: 16px;
+  overflow: hidden;
+}
+
+/* Custom scrollbar with futuristic styling */
+::-webkit-scrollbar {
+  width: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: var(--muted);
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb {
+  background: linear-gradient(135deg, var(--primary), var(--accent));
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: linear-gradient(135deg, var(--accent), var(--primary));
+}
+
+/* Added status indicator styles */
+.status-connected {
+  background: linear-gradient(135deg, var(--success), #22c55e);
+  box-shadow: 0 0 20px rgba(16, 185, 129, 0.3);
+}
+
+.status-disconnected {
+  background: linear-gradient(135deg, var(--error), #f87171);
+  box-shadow: 0 0 20px rgba(239, 68, 68, 0.3);
+}
+
+/* Enhanced button styles */
+.btn-primary {
+  background: linear-gradient(135deg, var(--primary), var(--accent));
+  border: none;
+  color: white;
+  padding: 12px 24px;
+  border-radius: 12px;
+  font-weight: 600;
+  transition: all 0.3s ease;
+  box-shadow: 0 4px 15px rgba(99, 102, 241, 0.3);
+}
+
+.btn-primary:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 25px rgba(99, 102, 241, 0.4);
+}
+
+.container {
+  max-width: 1400px;
+}
+
+.aspect-video {
+  aspect-ratio: 16 / 9;
+}

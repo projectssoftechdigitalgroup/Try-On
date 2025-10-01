@@ -1,0 +1,122 @@
+/* Container */
+.makeup-container {
+  max-width: 1200px;          /* increased from 650px */
+  margin: 2.5rem auto;
+  padding: 2.5rem;           /* increased padding */
+  border-radius: 20px;       /* larger rounding */
+  background-color: #fff0f5;
+  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
+  text-align: center;
+  font-family: "Arial", sans-serif;
+}
+
+.makeup-container h2 {
+  margin-bottom: 1.5rem;
+  color: #d63384;
+  font-size: 2rem;          /* increased font size */
+}
+
+/* Preview Image */
+.preview-container img {
+  max-width: 340px;         /* increased from 250px */
+  border-radius: 15px;
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.12);
+}
+
+/* Option Cards */
+.option-cards {
+  display: flex;
+  justify-content: center;
+  flex-wrap: wrap;
+  gap: 1.5rem;              /* increased spacing */
+  margin-top: 2.2rem;
+}
+
+.option-card {
+  flex: 1 1 40%;            /* wider cards */
+  min-width: 180px;         /* increased min width */
+  background-color: #ffe6f0;
+  padding: 2rem;            /* increased padding */
+  border-radius: 16px;
+  font-weight: bold;
+  color: #d63384;
+  font-size: 1.2rem;        /* larger text */
+  text-align: center;
+  cursor: pointer;
+  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.12);
+  transition: all 0.3s ease;
+}
+
+.option-card:hover {
+  transform: translateY(-6px) scale(1.03);
+  box-shadow: 0 10px 24px rgba(0, 0, 0, 0.18);
+  background-color: #ffd1e6;
+}
+
+/* Result Section */
+.result-section {
+  margin-top: 2.5rem;
+  text-align: left;
+  background-color: #fff0f5;
+  padding: 1.8rem;           /* increased padding */
+  border-radius: 16px;
+  box-shadow: inset 0 0 10px rgba(0,0,0,0.05);
+  font-size: 1.1rem;        /* larger text for results */
+}
+
+.makeup-item {
+  margin-bottom: 0.75rem;
+  font-size: 1.1rem;
+}
+
+/* Action Buttons */
+.action-buttons {
+  margin-top: 30px;
+  display: flex;
+  justify-content: center;
+  gap: 20px;
+}
+
+.download-btn, .home-btn {
+  padding: 15px 28px;       /* larger buttons */
+  font-weight: 600;
+  border-radius: 30px;
+  border: none;
+  cursor: pointer;
+  font-size: 1.05rem;       /* increased font size */
+  color: #fff;
+  transition: all 0.3s ease;
+}
+
+.download-btn {
+  background: linear-gradient(135deg, #ff9800, #ffb74d);
+}
+
+.download-btn:hover {
+  transform: scale(1.08);
+  background: linear-gradient(135deg, #ffa000, #ffb74d);
+}
+
+.home-btn {
+  background: linear-gradient(135deg, #2196f3, #64b5f6);
+}
+
+.home-btn:hover {
+  transform: scale(1.08);
+  background: linear-gradient(135deg, #1976d2, #42a5f5);
+}
+
+/* Loading & Error */
+.loading {
+  color: #ff9800;
+  font-weight: bold;
+  margin-top: 12px;
+  font-size: 1.1rem;        /* increased */
+}
+
+.error {
+  color: red;
+  font-weight: bold;
+  margin-top: 12px;
+  font-size: 1.1rem;        /* increased */
+}
