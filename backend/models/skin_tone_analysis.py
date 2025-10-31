@@ -6,6 +6,8 @@ import tempfile
 import os
 import base64
 import json
+import re
+import requests
 
 from groq import Groq
 from dotenv import load_dotenv
@@ -16,7 +18,7 @@ from google.genai import types
 load_dotenv()
 GROQ_API_KEY = os.getenv("GROQ_API_KEY")
 GEMINI_API_KEY = os.getenv("GEMINI_API_KEY")
- 
+
 grok_client = Groq(api_key=GROQ_API_KEY) if GROQ_API_KEY else None
 gemini_client = genai.Client(api_key=GEMINI_API_KEY) if GEMINI_API_KEY else None
 
@@ -43,6 +45,18 @@ def map_skin_tone(L, A, B):
         undertone = "Neutral"
 
     return f"{shade} skin tone with {undertone} undertone"
+
+
+# ---------- JSON Extractor ----------
+def safe_json_extract(text):
+    try:
+        # Look for JSON block inside text
+        match = re.search(r"\{.*\}", text, re.DOTALL)
+        if match:
+            return json.loads(match.group(0))
+    except Exception:
+        pass
+    return {"remarks": text}
 
 
 # ---------- (1) MediaPipe ----------
@@ -116,10 +130,10 @@ def analyze_with_groq(image_file):
                         "text": (
                             "You are a skincare AI. Analyze this face photo and return ONLY valid JSON with these fields:\n"
                             "{\n"
-                            "  'skin_tone': 'Fair/Medium/Tan/Deep',\n"
-                            "  'undertone': 'Warm/Cool/Neutral',\n"
-                            "  'remarks': 'short comment about skin',\n"
-                            "  'suggestions': ['tip1', 'tip2']\n"
+                            "  \"skin_tone\": \"Fair/Medium/Tan/Deep\",\n"
+                            "  \"undertone\": \"Warm/Cool/Neutral\",\n"
+                            "  \"remarks\": \"short comment about skin\",\n"
+                            "  \"suggestions\": [\"tip1\", \"tip2\"]\n"
                             "}"
                         )
                     },
@@ -137,33 +151,27 @@ def analyze_with_groq(image_file):
         )
 
         raw_text = chat_completion.choices[0].message.content
-
-        try:
-            data = json.loads(raw_text.replace("'", "\""))
-        except:
-            data = {"remarks": raw_text}
-
-        return data
+        return safe_json_extract(raw_text)
 
     except Exception as e:
         return {"error": f"Groq error: {str(e)}"}
 
 
 # ---------- (3) Gemini Vision ----------
-import requests
-
 def analyze_with_gemini(image_file):
     try:
         img_bytes = image_file.read()
         img_b64 = base64.b64encode(img_bytes).decode("utf-8")
 
         prompt = (
-            "You are a skincare AI. Analyze this face photo and return ONLY valid JSON with fields:\n"
+            "You are a skincare AI. Analyze this face photo and return the result in strict JSON format only. "
+            "Do not include explanations, emojis, or text outside JSON. "
+            "The JSON must match this schema:\n"
             "{\n"
-            "  'skin_tone': 'Fair/Medium/Tan/Deep',\n"
-            "  'undertone': 'Warm/Cool/Neutral',\n"
-            "  'remarks': 'short skincare comment',\n"
-            "  'suggestions': ['tip1','tip2']\n"
+            "  \"skin_tone\": \"Fair/Medium/Tan/Deep\",\n"
+            "  \"undertone\": \"Warm/Cool/Neutral\",\n"
+            "  \"remarks\": \"short skincare comment\",\n"
+            "  \"suggestions\": [\"tip1\", \"tip2\"]\n"
             "}"
         )
 
@@ -185,14 +193,10 @@ def analyze_with_gemini(image_file):
         data = resp.json()
         raw_text = data["candidates"][0]["content"]["parts"][0]["text"]
 
-        try:
-            return json.loads(raw_text)
-        except:
-            return {"remarks": raw_text}
+        return safe_json_extract(raw_text)
 
     except Exception as e:
         return {"error": f"Gemini REST error: {str(e)}"}
-
 
 
 # ---------- Main Switch ----------
@@ -207,5 +211,4 @@ def detect_tone(image_file, method="mediapipe"):
         else:
             return {"error": "Invalid method. Use 'mediapipe', 'groq', or 'gemini'."}
     except Exception as e:
-        return {"error": str(e)} 
- 
+        return {"error": str(e)}

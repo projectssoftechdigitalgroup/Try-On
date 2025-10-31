@@ -68,8 +68,9 @@ const ManualTryOn = ({ uploadedImage }) => {
 
   const mapCategoryForApi = c => (c === "lipstick" ? "lips" : c);
 
-  const applySingle = async (cat, colorObj, inputUrl) => {
-    const file = await fetchUrlAsFile(inputUrl || uploadedImage, "current.jpg");
+  const applySingle = async (cat, colorObj) => {
+    // Always use original uploaded image, not processed one
+    const file = await fetchUrlAsFile(uploadedImage, "current.jpg");
     const fd = new FormData();
     fd.append("file", file);
     fd.append("category", mapCategoryForApi(cat));
@@ -78,7 +79,7 @@ const ManualTryOn = ({ uploadedImage }) => {
     const res = await fetch(`${API_BASE}/manual-makeup/`, { method: "POST", body: fd });
     const data = await res.json();
     if (!res.ok) throw new Error(data?.error || `Failed applying ${cat}`);
-    return `${API_BASE}/${data.output_path}`;
+    return `${API_BASE}${data.output_path}`;
   };
 
   const handleApplyOne = async (cat) => {
@@ -88,7 +89,7 @@ const ManualTryOn = ({ uploadedImage }) => {
       if (!c) return alert(`Pick a ${CATEGORY_LABELS[cat]} color first.`);
       setLoading(true);
       setProgressText(`Applying ${CATEGORY_LABELS[cat]} (${c.name})…`);
-      const out = await applySingle(cat, c, baseImage);
+      const out = await applySingle(cat, c);
       setResultImage(out);
     } catch (e) {
       alert(`❌ ${e.message}`);
@@ -109,7 +110,7 @@ const ManualTryOn = ({ uploadedImage }) => {
         const cat = queue[i];
         const col = selected[cat];
         setProgressText(`Applying ${CATEGORY_LABELS[cat]} (${col.name})… ${i + 1}/${queue.length}`);
-        current = await applySingle(cat, col, current);
+        current = await applySingle(cat, col);
       }
       setResultImage(current);
       setProgressText("All selected makeup applied.");
@@ -151,7 +152,12 @@ const ManualTryOn = ({ uploadedImage }) => {
         <div className="preview-pane">
           <div className="preview-frame">
             {baseImage ? (
-              <img src={baseImage} alt="Preview" className="preview-img" />
+              <img
+                src={baseImage}
+                alt="Preview"
+                className="preview-img"
+                onError={(e) => { e.currentTarget.src = "/default_placeholder.png"; }}
+              />
             ) : (
               <div className="preview-placeholder">Upload an image</div>
             )}

@@ -1,0 +1,198 @@
+/* ==========================
+   🧔 Moustache Try-On Styling
+   ========================== */
+
+   .moustache-tryon-container {
+    text-align: center;
+    padding: 3rem 2rem;
+    background: linear-gradient(180deg, #fff2ec 0%, #fffaf7 100%);
+    min-height: 100vh;
+    animation: fadeIn 0.8s ease-in-out;
+  }
+  
+  @keyframes fadeIn {
+    from { opacity: 0; transform: translateY(10px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+  
+  /* ------------------------------
+     Title + Subheading
+  --------------------------------*/
+  .moustache-title {
+    font-size: 2.2rem;
+    font-weight: 700;
+    color: #c65a24;
+    margin-bottom: 0.3rem;
+    letter-spacing: 0.5px;
+    text-shadow: 0 2px 4px rgba(198, 90, 36, 0.3);
+  }
+  
+  .moustache-subtitle {
+    font-size: 1.05rem;
+    color: #555;
+    margin-bottom: 2.5rem;
+    letter-spacing: 0.2px;
+  }
+  
+  /* ------------------------------
+     Grid Layout
+  --------------------------------*/
+  .moustache-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+    gap: 1.5rem;
+    justify-items: center;
+    margin-bottom: 2.5rem;
+    padding: 0 1rem;
+  }
+  
+  /* ------------------------------
+     Individual Moustache Cards
+  --------------------------------*/
+  .moustache-card {
+    background: #fff;
+    border: 2px solid #eee;
+    border-radius: 16px;
+    padding: 14px;
+    width: 150px;
+    transition: all 0.35s ease;
+    cursor: pointer;
+    box-shadow: 0 3px 8px rgba(0, 0, 0, 0.06);
+    transform: translateY(0);
+    position: relative;
+    overflow: hidden;
+  }
+  
+  .moustache-card::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(145deg, rgba(210,107,50,0.05), rgba(255,255,255,0));
+    opacity: 0;
+    transition: opacity 0.3s ease;
+  }
+  
+  .moustache-card:hover::after {
+    opacity: 1;
+  }
+  
+  .moustache-card:hover,
+  .moustache-card.selected {
+    border-color: #d26b32;
+    box-shadow: 0 6px 18px rgba(210, 107, 50, 0.25);
+    transform: translateY(-6px) scale(1.04);
+  }
+  
+  .moustache-img {
+    width: 100%;
+    height: 120px;
+    object-fit: contain;
+    border-radius: 10px;
+    margin-bottom: 10px;
+    transition: transform 0.3s ease;
+  }
+  
+  .moustache-card:hover .moustache-img {
+    transform: scale(1.08);
+  }
+  
+  .moustache-card p {
+    font-size: 0.95rem;
+    color: #444;
+    margin: 0;
+    font-weight: 500;
+  }
+  
+  /* ------------------------------
+     Result Display Area
+  --------------------------------*/
+  .moustache-result-box {
+    display: flex;
+    justify-content: center;
+    gap: 2rem;
+    flex-wrap: wrap;
+    margin-top: 2.5rem;
+    padding-bottom: 2rem;
+  }
+  
+  .moustache-column {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+  }
+  
+  .moustache-preview {
+    width: 270px;
+    border-radius: 14px;
+    box-shadow: 0 6px 18px rgba(0, 0, 0, 0.15);
+    border: 3px solid #f2e1d6;
+    background: #fff;
+    transition: all 0.4s ease;
+  }
+  
+  .moustache-preview:hover {
+    box-shadow: 0 8px 24px rgba(210, 107, 50, 0.3);
+    transform: scale(1.03);
+  }
+  
+  .moustache-label {
+    margin-top: 12px;
+    font-weight: 600;
+    color: #c65a24;
+    letter-spacing: 0.3px;
+    text-transform: uppercase;
+  }
+  
+  /* ------------------------------
+     Loading + Buttons
+  --------------------------------*/
+  .moustache-loading {
+    color: #c65a24;
+    font-weight: 600;
+    margin-top: 1rem;
+    animation: pulse 1.2s infinite;
+  }
+  
+  @keyframes pulse {
+    0%, 100% { opacity: 0.4; }
+    50% { opacity: 1; }
+  }
+  
+  /* ------------------------------
+     Buttons
+  --------------------------------*/
+  .btn-back {
+    margin-top: 2rem;
+    background: linear-gradient(90deg, #d26b32, #a84e1c);
+    color: #fff;
+    border: none;
+    padding: 12px 24px;
+    border-radius: 10px;
+    cursor: pointer;
+    font-weight: 600;
+    letter-spacing: 0.4px;
+    box-shadow: 0 4px 10px rgba(168, 78, 28, 0.2);
+    transition: all 0.3s ease;
+  }
+  
+  .btn-back:hover {
+    background: linear-gradient(90deg, #a84e1c, #d26b32);
+    transform: translateY(-3px);
+    box-shadow: 0 6px 16px rgba(168, 78, 28, 0.3);
+  }
+  
+  /* ------------------------------
+     Responsive Adjustments
+  --------------------------------*/
+  @media (max-width: 768px) {
+    .moustache-title {
+      font-size: 1.7rem;
+    }
+    .moustache-grid {
+      grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+    }
+    .moustache-preview {
+      width: 220px;
+    }
+  }
+  

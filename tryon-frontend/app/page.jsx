@@ -1,10 +1,10 @@
 "use client"
 
 import { useState, useEffect } from "react"
-import { VideoFeed } from "@/components/video-feed"
-import { ClothingSelector } from "@/components/clothing-selector"
-import { Header } from "@/components/header"
-import { StatusIndicator } from "@/components/status-indicator"
+import { VideoFeed } from "@/components/VideoFeed"
+import { ClothingSelector } from "@/components/ClothingSelector"
+import { Header } from "@/components/Header"
+import { StatusIndicator } from "@/components/StatusIndicator"
 
 export default function VirtualTryOnApp() {
   const [selectedTop, setSelectedTop] = useState("shirt")
