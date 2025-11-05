@@ -1,6 +1,6 @@
 # models/clothesTryOn.py
 import os
-os.environ["TF_CPP_MIN_LOG_LEVEL"] = "3"  # Suppress TensorFlow Lite logs
+os.environ["TF_CPP_MIN_LOG_LEVEL"] = "3"  # Suppress TensorFlow logs
 
 import cv2
 import mediapipe as mp
@@ -101,7 +101,12 @@ def load_clothing_images():
     def get_image(path_entry):
         if isinstance(path_entry, list):
             path_entry = random.choice(path_entry)
-        return cv2.imread(path_entry, cv2.IMREAD_UNCHANGED) if path_entry else None
+        if not path_entry:
+            return None
+        if not os.path.exists(path_entry):
+            return None
+        img = cv2.imread(path_entry, cv2.IMREAD_UNCHANGED)
+        return img
 
     top_path = CLOTHING_DATA.get(top_type)
     bottom_path = CLOTHING_DATA.get(bottom_type)
@@ -111,20 +116,24 @@ def load_clothing_images():
     bottom_img = get_image(bottom_path)
     dress_img = get_image(dress_path)
 
+    # Use placeholders if something is missing (avoid crashing)
     if top_img is not None:
         print(f"✅ Loaded top: {top_path}")
     elif top_type != "none":
-        print(f"⚠️ Top cloth not found at {top_path}")
+        print(f"⚠️ Top cloth not found at {top_path}, using placeholder")
+        top_img = np.zeros((200, 200, 4), dtype=np.uint8)
 
     if bottom_img is not None:
         print(f"✅ Loaded bottom: {bottom_path}")
     elif bottom_type != "none":
-        print(f"⚠️ Bottom cloth not found at {bottom_path}")
+        print(f"⚠️ Bottom cloth not found at {bottom_path}, using placeholder")
+        bottom_img = np.zeros((200, 200, 4), dtype=np.uint8)
 
     if dress_img is not None:
         print(f"✅ Loaded dress: {dress_path}")
     elif dress_type != "none":
-        print(f"⚠️ Dress cloth not found at {dress_path}")
+        print(f"⚠️ Dress cloth not found at {dress_path}, using placeholder")
+        dress_img = np.zeros((300, 300, 4), dtype=np.uint8)
 
 
 # Initialize clothing images
@@ -189,6 +198,57 @@ def overlay_transparent(background, overlay, x, y):
 def place_cloth(frame, cloth_img, cloth_type, get_point):
     if cloth_img is None or cloth_type == "none":
         return frame
+
+    # Bottom / Pants / Skirts / Jeans
+    if any(tag in cloth_type for tag in ["pant", "jeans", "pajama", "skirt", "tunic"]):
+        l_hip, r_hip = get_point("l_hip"), get_point("r_hip")
+        l_toe, r_toe = get_point("l_toe"), get_point("r_toe")
+
+        hip_w = np.linalg.norm(np.array(r_hip) - np.array(l_hip))
+        leg_h = np.linalg.norm(np.array(l_toe) - np.array(l_hip))
+
+        new_w = int(hip_w * 2.2)
+        new_h = int(leg_h * 1.1)
+
+        resized = cv2.resize(cloth_img, (new_w, new_h))
+        cx = int((l_hip[0] + r_hip[0]) / 2 - new_w / 2)
+        cy = int(min(l_hip[1], r_hip[1]))
+
+        return overlay_transparent(frame, resized, cx, cy)
+
+    # Tops / Shirts / Kurtas / Blouses / Polo
+    if any(tag in cloth_type for tag in ["shirt", "polo", "blouse", "kurta"]):
+        l_sh, r_sh = get_point("l_shoulder"), get_point("r_shoulder")
+        l_hip, r_hip = get_point("l_hip"), get_point("r_hip")
+
+        shoulder_w = np.linalg.norm(np.array(r_sh) - np.array(l_sh))
+        torso_h = np.linalg.norm(np.array(l_hip) - np.array(l_sh))
+
+        new_w = int(shoulder_w * 2.0)
+        new_h = int(torso_h * 1.4)
+
+        resized = cv2.resize(cloth_img, (new_w, new_h))
+        cx = int((l_sh[0] + r_sh[0]) / 2 - new_w / 2)
+        cy = int(min(l_sh[1], r_sh[1])) - int(new_h * 0.15)
+
+        return overlay_transparent(frame, resized, cx, cy)
+
+    # Full-body dresses / gowns / suits
+    if any(tag in cloth_type for tag in ["full_suit", "sundress", "gown"]):
+        l_sh, r_sh = get_point("l_shoulder"), get_point("r_shoulder")
+        l_toe, r_toe = get_point("l_toe"), get_point("r_toe")
+
+        shoulder_w = np.linalg.norm(np.array(r_sh) - np.array(l_sh))
+        dress_h = np.linalg.norm(np.array(l_toe) - np.array(l_sh)) * 1.1
+        dress_w = shoulder_w * 4.0
+
+        resized = cv2.resize(cloth_img, (int(dress_w), int(dress_h)))
+        cx = int((l_sh[0] + r_sh[0]) / 2 - dress_w / 2)
+        cy = int(min(l_sh[1], r_sh[1])) - int(dress_h * 0.14)
+
+        return overlay_transparent(frame, resized, cx, cy)
+
+    return frame
 
     l_sh, r_sh = get_point("l_shoulder"), get_point("r_shoulder")
     l_hip, r_hip = get_point("l_hip"), get_point("r_hip")
@@ -274,3 +334,5 @@ async def health_check():
 @router.get("/video")
 def video_feed():
     return StreamingResponse(gen_frames(), media_type="multipart/x-mixed-replace; boundary=frame")
+
+

@@ -2,213 +2,273 @@
 @import "tailwindcss/components";
 @import "tailwindcss/utilities";
 
-/* ========================= COLOR VARIABLES ========================= */
-:root {
-  --background: #0a0a14;
-  --foreground: #f8fafc;
-  --card: #151527;
-  --card-foreground: #ffffff;
-  --primary: #6366f1;
-  --primary-foreground: #ffffff;
-  --secondary: #1e1e3f;
-  --secondary-foreground: #ffffff;
-  --muted: #2a2a4b;
-  --muted-foreground: #94a3b8;
-  --accent: #06b6d4;
-  --accent-foreground: #ffffff;
-  --border: #2d3748;
-  --input: #2d3748;
-  --ring: #6366f1;
-  --success: #10b981;
-  --warning: #f59e0b;
-  --error: #ef4444;
-}
+/* ========================= WRAPPER SCOPE ========================= */
+.tryon-page {
+  --background: #070712;
+  --foreground: #f1f5f9;
+  --card: rgba(255, 255, 255, 0.06);
+  --primary: #6d6fffe8;
+  --accent: #00d0ff;
+  --ring: #6d6fff;
 
-/* ========================= GLOBAL ========================= */
-body {
-  margin: 0;
-  font-family: "Poppins", "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", "Roboto", sans-serif;
-  background: radial-gradient(circle at 20% 80%, rgba(99, 102, 241, 0.15) 0%, transparent 60%),
-    radial-gradient(circle at 80% 20%, rgba(6, 182, 212, 0.15) 0%, transparent 60%),
-    linear-gradient(135deg, #0a0a14 0%, #111827 50%, #1e293b 100%);
+  background: linear-gradient(135deg, #06060d 0%, #0b0f24 50%, #11182e 100%);
   color: var(--foreground);
   min-height: 100vh;
   overflow-x: hidden;
-  scroll-behavior: smooth;
-  animation: fadeInBody 1s ease-out;
+  animation: fadeInBody 0.8s ease-out;
 }
 
 @keyframes fadeInBody {
-  from {
-    opacity: 0;
-    transform: translateY(15px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
+  from { opacity: 0; transform: translateY(20px); }
+  to { opacity: 1; transform: translateY(0); }
 }
 
 /* ========================= HERO TITLE ========================= */
-h1 {
-  text-shadow: 0 0 20px rgba(99, 102, 241, 0.6), 0 0 40px rgba(6, 182, 212, 0.3);
+.tryon-page h1 {
+  font-weight: 700;
+  letter-spacing: .5px;
+  text-shadow: 0 0 25px rgba(109, 110, 255, 0.5),
+               0 0 50px rgba(0, 208, 255, 0.3);
 }
 
-.animate-gradient {
-  background-size: 200% auto;
-  animation: gradientShift 6s ease infinite;
-}
-
-@keyframes gradientShift {
-  0%, 100% {
-    background-position: 0% center;
-  }
-  50% {
-    background-position: 100% center;
-  }
-}
-
-/* ========================= GLASS ELEMENTS ========================= */
-.glass {
-  background: rgba(255, 255, 255, 0.05);
-  backdrop-filter: blur(18px);
-  border: 1px solid rgba(255, 255, 255, 0.08);
-  border-radius: 20px;
-  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
-  transition: all 0.4s ease;
-}
-
-.glass:hover {
-  transform: translateY(-4px);
-  box-shadow: 0 12px 45px rgba(99, 102, 241, 0.35);
-}
-
-/* ========================= VIDEO CONTAINER ========================= */
-.video-frame {
-  position: relative;
-  border-radius: 24px;
+/* ========================= CARD / PANEL STYLE ========================= */
+.tryon-page .glass,
+.tryon-page .bg-white\/10 {
+  background: rgba(255, 255, 255, 0.07) !important;
+  backdrop-filter: blur(22px);
+  border-radius: 22px;
+  border: 1px solid rgba(109, 110, 255, 0.25);
+  box-shadow:
+    0 0 25px rgba(109, 110, 255, 0.25),
+    inset 0 0 15px rgba(0, 208, 255, 0.15);
+  transition: all .35s ease;
   overflow: hidden;
-  border: 2px solid rgba(99, 102, 241, 0.3);
-  background: linear-gradient(145deg, rgba(99, 102, 241, 0.2), rgba(6, 182, 212, 0.1));
-  box-shadow: inset 0 0 20px rgba(99, 102, 241, 0.2), 0 0 30px rgba(99, 102, 241, 0.3);
-  animation: pulseBorder 3s ease-in-out infinite;
 }
 
-@keyframes pulseBorder {
-  0%, 100% {
-    box-shadow: 0 0 25px rgba(99, 102, 241, 0.3),
-                inset 0 0 20px rgba(6, 182, 212, 0.2);
-  }
-  50% {
-    box-shadow: 0 0 40px rgba(99, 102, 241, 0.6),
-                inset 0 0 30px rgba(6, 182, 212, 0.4);
-  }
+.tryon-page .glass:hover,
+.tryon-page .bg-white\/10:hover {
+  transform: translateY(-6px);
+  box-shadow:
+    0 0 45px rgba(109, 110, 255, 0.55),
+    inset 0 0 25px rgba(0, 208, 255, 0.25);
 }
+
+/* ========================= VIDEO FRAME ========================= */
+.tryon-page .video-frame,
+.tryon-page .relative.rounded-2xl {
+  border-radius: 28px;
+  overflow: hidden;
+  border: 2px solid rgba(109, 110, 255, 0.45);
+  background: rgba(109, 110, 255, 0.12);
+  box-shadow:
+    0 0 50px rgba(109, 110, 255, 0.4),
+    inset 0 0 35px rgba(0, 208, 255, 0.25);
+  animation: videoGlow 3s ease-in-out infinite;
+}
+
+
 
 /* ========================= BUTTONS ========================= */
-.btn-primary {
+.tryon-page button {
   background: linear-gradient(135deg, var(--primary), var(--accent));
-  color: #fff;
   padding: 12px 26px;
   border-radius: 14px;
   font-weight: 600;
   border: none;
   cursor: pointer;
-  box-shadow: 0 4px 15px rgba(99, 102, 241, 0.3);
-  transition: all 0.3s ease;
+  color: #fff;
+  box-shadow:
+    0 0 18px rgba(109, 110, 255, 0.55),
+    inset 0 0 14px rgba(0,208,255,0.25);
+  transition: all 0.35s ease;
 }
 
-.btn-primary:hover {
-  transform: translateY(-2px) scale(1.03);
-  box-shadow: 0 10px 25px rgba(99, 102, 241, 0.6);
+.tryon-page button:hover {
+  transform: translateY(-3px) scale(1.05);
+  box-shadow:
+    0 0 32px rgba(109, 110, 255, 0.85),
+    inset 0 0 20px rgba(0,208,255,0.35);
 }
 
-/* ========================= STATUS INDICATOR ========================= */
-.status-connected {
-  background: linear-gradient(135deg, var(--success), #22c55e);
-  box-shadow: 0 0 25px rgba(16, 185, 129, 0.4);
-}
-
-.status-disconnected {
-  background: linear-gradient(135deg, var(--error), #f87171);
-  box-shadow: 0 0 25px rgba(239, 68, 68, 0.4);
-}
-
-/* ========================= CATEGORY SELECTOR ========================= */
-.category-selector {
-  display: flex;
-  justify-content: center;
-  gap: 14px;
-  margin-bottom: 1.5rem;
-  flex-wrap: wrap;
-}
-
-.category-btn {
-  background: rgba(255, 255, 255, 0.05);
-  border: 1px solid rgba(255, 255, 255, 0.1);
+/* ========================= CLOTHING CATEGORY BUTTONS ========================= */
+.tryon-page .category-btn {
+  padding: 10px 22px;
+  border-radius: 14px;
+  font-weight: 500;
+  background: rgba(255,255,255,0.05);
+  border: 1px solid rgba(109, 110, 255, 0.25);
   color: var(--foreground);
-  font-weight: 600;
-  padding: 10px 20px;
-  border-radius: 12px;
-  transition: all 0.3s ease;
+  transition: all .3s ease;
 }
 
-.category-btn:hover {
+.tryon-page .category-btn:hover {
   background: linear-gradient(135deg, var(--primary), var(--accent));
-  color: #fff;
+  box-shadow: 0 0 22px rgba(109,110,255,.55);
+  color: white;
   transform: translateY(-3px);
-  box-shadow: 0 8px 25px rgba(99, 102, 241, 0.4);
 }
 
-.category-btn.active {
+.tryon-page .category-btn.active {
   background: linear-gradient(135deg, var(--accent), var(--primary));
-  color: #fff;
-  box-shadow: 0 0 25px rgba(99, 102, 241, 0.6);
+  box-shadow: 0 0 33px rgba(109,110,255,.9);
+  color: white;
 }
 
-/* ========================= SCROLLBAR ========================= */
-::-webkit-scrollbar {
-  width: 8px;
-}
-::-webkit-scrollbar-track {
-  background: var(--muted);
-}
-::-webkit-scrollbar-thumb {
-  background: linear-gradient(135deg, var(--primary), var(--accent));
-  border-radius: 4px;
-}
-::-webkit-scrollbar-thumb:hover {
-  background: linear-gradient(135deg, var(--accent), var(--primary));
-}
-
-/* ========================= FOOTER ========================= */
-footer {
-  color: #94a3b8;
-  letter-spacing: 0.5px;
-}
-footer span {
-  color: var(--accent);
-}
-
-/* ========================= ANIMATIONS ========================= */
-.float {
+/* ========================= FLOATING ANIMATIONS ========================= */
+.tryon-page .float {
   animation: float 3s ease-in-out infinite;
 }
 @keyframes float {
-  0%, 100% { transform: translateY(0); }
+  0%,100% { transform: translateY(0); }
   50% { transform: translateY(-8px); }
 }
 
-.pulse-glow {
-  animation: pulseGlow 2s ease-in-out infinite;
+/* ========================= HOW IT WORKS CARD – NEW STYLE ========================= */
+.tryon-page .how-it-works {
+  background: rgba(255, 255, 255, 0.06);
+  backdrop-filter: blur(18px);
+  border-radius: 28px;
+  border: 1px solid rgba(109, 110, 255, 0.25);
+  box-shadow:
+    0 0 25px rgba(109, 110, 255, 0.25),
+    inset 0 0 20px rgba(0, 208, 255, 0.15);
+  padding: 42px 48px;
+  transition: all 0.35s ease;
 }
-@keyframes pulseGlow {
-  0%, 100% {
-    box-shadow: 0 0 25px rgba(99, 102, 241, 0.4),
-                0 0 40px rgba(6, 182, 212, 0.2);
-  }
-  50% {
-    box-shadow: 0 0 35px rgba(99, 102, 241, 0.7),
-                0 0 60px rgba(6, 182, 212, 0.3);
-  }
+
+/* ========================= OUTFIT SELECTOR GRID ========================= */
+.tryon-page .clothing-grid {
+  display: flex;
+  gap: 22px;
+  padding-top: 18px;
+  overflow-x: auto;
+  scroll-snap-type: x mandatory;
+  padding-bottom: 12px;
+}
+
+.tryon-page .clothing-grid::-webkit-scrollbar {
+  height: 7px;
+}
+
+.tryon-page .clothing-grid::-webkit-scrollbar-track {
+  background: rgba(255,255,255,0.07);
+  border-radius: 10px;
+}
+
+.tryon-page .clothing-grid::-webkit-scrollbar-thumb {
+  background: linear-gradient(135deg, #6d6fff, #00d0ff);
+  border-radius: 10px;
+}
+
+/* INDIVIDUAL ITEM CARD */
+.tryon-page .clothing-item {
+  min-width: 180px;
+  max-width: 180px;
+  background: rgba(255, 255, 255, 0.08);
+  border: 1px solid rgba(109, 110, 255, 0.25);
+  border-radius: 18px;
+  padding: 18px 14px;
+  cursor: pointer;
+  scroll-snap-align: start;
+  text-align: center;
+  transition: all .35s ease;
+  box-shadow:
+    0 0 12px rgba(109, 110, 255, 0.25),
+    inset 0 0 12px rgba(0, 208, 255, 0.15);
+}
+
+.tryon-page .clothing-item:hover {
+  transform: translateY(-6px);
+  box-shadow:
+    0 0 35px rgba(109,110,255,.55),
+    inset 0 0 20px rgba(0,208,255,0.25);
+}
+
+/* ITEM IMAGE */
+.tryon-page .clothing-item img {
+  width: 100%;
+  height: 140px;
+  object-fit: contain;
+  border-radius: 10px;
+  transition: transform .35s ease;
+}
+
+.tryon-page .clothing-item:hover img {
+  transform: scale(1.10);
+}
+
+/* ITEM TITLE */
+.tryon-page .clothing-item p {
+  margin-top: 14px;
+  font-size: 1rem;
+  font-weight: 500;
+  color: #ffffff;
+}
+
+/* ACTIVE SELECTED ITEM */
+.tryon-page .clothing-item.active {
+  border: 2px solid var(--accent);
+  transform: scale(1.08);
+  box-shadow:
+    0 0 44px rgba(0,208,255,.85),
+    inset 0 0 25px rgba(0,208,255,.45);
+}
+
+.tryon-page .how-it-works {
+  background: rgba(255, 255, 255, 0.06);
+  backdrop-filter: blur(18px);
+  border-radius: 28px;
+  border: 1px solid rgba(109, 110, 255, 0.25);
+  box-shadow:
+    0 0 25px rgba(109, 110, 255, 0.25),
+    inset 0 0 20px rgba(0, 208, 255, 0.15);
+  padding: 42px 48px;
+  transition: all 0.35s ease;
+}
+
+.tryon-page .how-it-works:hover {
+  transform: translateY(-6px);
+  box-shadow:
+    0 0 45px rgba(109, 110, 255, 0.55),
+    inset 0 0 30px rgba(0, 208, 255, 0.25);
+}
+
+.tryon-page .how-it-works h3 {
+  font-size: 2rem;
+  font-weight: 700;
+  background: linear-gradient(135deg, #6d6fff, #00d0ff);
+  margin-bottom: 32px;
+  text-align: center;
+  color:#ffffff
+}
+
+.tryon-page .how-step {
+  display: flex;
+  align-items: center;
+  gap: 18px;
+  margin-bottom: 20px;
+  color: #e2e8f0;
+  font-size: 1.1rem;
+  font-weight: 500;
+}
+
+.tryon-page .how-step .step-badge {
+  width: 42px;
+  height: 42px;
+  border-radius: 50%;
+  font-weight: 700;
+  font-size: 1rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  background: linear-gradient(135deg, #6d6fff, #00d0ff);
+  box-shadow: 0 0 25px rgba(109, 110, 255, .55);
+  color: white;
+  transition: transform .3s ease, box-shadow .3s ease;
+}
+
+.tryon-page .how-step:hover .step-badge {
+  transform: scale(1.15);
+  box-shadow: 0 0 40px rgba(109, 110, 255, .85);
 }

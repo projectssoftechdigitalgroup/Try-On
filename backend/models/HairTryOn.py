@@ -201,7 +201,7 @@ async def tryon_hair(image: UploadFile, style_name: str = Form(...)):
         hair_height = int(hair_width * overlay.shape[0] / overlay.shape[1])
         overlay = cv2.resize(overlay, (hair_width, hair_height))
         y_offset = y - int(h * 1.35)
-        x_offset = x - int((hair_width - w) / 2)
+        x_offset = x - int((hair_width - w) / 2)-8
         blended_img = smooth_alpha_blend(user_img.copy(), overlay, max(x_offset, 0), max(y_offset, 0))
         _, img_encoded = cv2.imencode(".png", blended_img)
         return Response(content=img_encoded.tobytes(), media_type="image/png")

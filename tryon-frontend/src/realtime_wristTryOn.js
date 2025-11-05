@@ -36,7 +36,7 @@ export default function RealTimeWristTryOn() {
           await videoRef.current.play();
         }
       } catch (err) {
-        setErrorMessage("Camera access denied or unavailable.");
+        setErrorMessage("");
       }
     };
 
