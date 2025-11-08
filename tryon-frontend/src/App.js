@@ -8,8 +8,10 @@ import JewelryTryOn from "./JewelryTryOn";
 import RealtimeSkinAnalysis from "./realtime_skin_analysis";
 import CapGlassesTryOn from "./CapGlassesTryOn";
 import RealtimeCapGlasses from "./realtime_cap_glasses";
-import WristTryOn from "./wristTryOn"; // ✅ Wrist Try-On
-import ClothesTryOn from "./clothesTryOn"; // ✅ Clothes Try-On
+import WristTryOn from "./wristTryOn";
+import ClothesTryOn from "./clothesTryOn";
+import MoustacheTryOn from "./MoustacheTryOn"; // ✅ New
+import HairTryOn from "./HairTryOn"; // ✅ New
 import "./App.css";
 
 function App() {
@@ -46,20 +48,14 @@ function App() {
               </div>
             </div>
 
-            <div
-              className="card"
-              onClick={() => setActiveFeature("wristTryOn")}
-            >
+            <div className="card" onClick={() => setActiveFeature("wristTryOn")}>
               <div className="card-title">✋ Wrist Try-On</div>
               <div className="card-description">
                 Try watches, bracelets, and rings virtually
               </div>
             </div>
 
-            <div
-              className="card"
-              onClick={() => setActiveFeature("clothesTryOn")}
-            >
+            <div className="card" onClick={() => setActiveFeature("clothesTryOn")}>
               <div className="card-title">👕 Clothes Try-On</div>
               <div className="card-description">
                 Try shirts, pants, frocks, and outfits virtually
@@ -121,12 +117,8 @@ function App() {
             {/* Step 3: Preview */}
             {uploadedImage && (
               <div className="image-preview-box">
-                <h3>🖼️ Your Selected Image</h3>
-                <img
-                  src={uploadedImage}
-                  alt="Preview"
-                  className="image-preview"
-                />
+                <h3 className="H3">🖼️ Your Selected Image</h3>
+                <img src={uploadedImage} alt="Preview" className="image-preview" />
                 <button onClick={resetImage} className="btn-secondary">
                   🔄 Change Image
                 </button>
@@ -150,23 +142,33 @@ function App() {
                   </div>
                 </div>
 
-                <div
-                  className="card"
-                  onClick={() => setActiveFeature("jewelry")}
-                >
+                <div className="card" onClick={() => setActiveFeature("jewelry")}>
                   <div className="card-title">💍 Jewellery Try-On</div>
                   <div className="card-description">
                     Try earrings, nose rings, necklaces, and bindis
                   </div>
                 </div>
 
-                <div
-                  className="card"
-                  onClick={() => setActiveFeature("capglasses")}
-                >
+                <div className="card" onClick={() => setActiveFeature("capglasses")}>
                   <div className="card-title">🧢 Cap/Glasses Try-On</div>
                   <div className="card-description">
                     Try virtual caps, hats, and glasses
+                  </div>
+                </div>
+
+                {/* ✅ New Moustache Try-On */}
+                <div className="card" onClick={() => setActiveFeature("moustache")}>
+                  <div className="card-title">🧔 Moustache Try-On</div>
+                  <div className="card-description">
+                    Experiment with different beard and moustache styles
+                  </div>
+                </div>
+
+                {/* ✅ New Hair Try-On */}
+                <div className="card" onClick={() => setActiveFeature("hair")}>
+                  <div className="card-title">💇 Hair Try-On</div>
+                  <div className="card-description">
+                    Try new haircuts, colors, and styles virtually
                   </div>
                 </div>
 
@@ -191,7 +193,7 @@ function App() {
           <ClothesTryOn goBackHome={() => setActiveFeature(null)} />
         )}
 
-        {/* Routes for Face Features */}
+        {/* Face Try-On Subfeatures */}
         {activeFeature === "skin" && (
           <SkinAnalysis
             uploadedImage={uploadedImage}
@@ -217,12 +219,20 @@ function App() {
           />
         )}
         {activeFeature === "realtime" && (
-          <RealtimeSkinAnalysis
+          <RealtimeSkinAnalysis goBackHome={() => setActiveFeature("faceTryOn")} />
+        )}
+        {activeFeature === "realtimeCapGlasses" && (
+          <RealtimeCapGlasses goBackHome={() => setActiveFeature("faceTryOn")} />
+        )}
+        {activeFeature === "moustache" && (
+          <MoustacheTryOn
+            uploadedImage={uploadedImage}
             goBackHome={() => setActiveFeature("faceTryOn")}
           />
         )}
-        {activeFeature === "realtimeCapGlasses" && (
-          <RealtimeCapGlasses
+        {activeFeature === "hair" && (
+          <HairTryOn
+            uploadedImage={uploadedImage}
             goBackHome={() => setActiveFeature("faceTryOn")}
           />
         )}

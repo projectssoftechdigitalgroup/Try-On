@@ -3,7 +3,8 @@ from fastapi import FastAPI, UploadFile, File, Form, Request, WebSocket, WebSock
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
 from fastapi.responses import FileResponse, JSONResponse
-import shutil, os, time, re, cv2, numpy as np, traceback, base64, subprocess
+import shutil, os, time, re, cv2, numpy as np, traceback, base64, subprocess, io, requests
+from PIL import Image
 
 # --- Import project modules ---
 from models import skin_tone_analysis, makeup_models, template_makeup
@@ -15,8 +16,9 @@ from models import CapGlassesTryOn as cap_glasses_tryon
 from models import wrist_module
 from models import realtime_cap_glasses
 from models import clothesTryOn
-
-
+from models.MoustacheTryOn import router as moustache_router
+from models.HairTryOn import router as HairTryOnRouter
+from models.realtime_wristTryOn import router as realtime_wristTryOn 
 
 
 # ---------------- App ----------------
@@ -35,6 +37,9 @@ app.add_middleware(
 app.include_router(chat_router)
 app.include_router(jewellary_recommendation.router)
 app.include_router(clothesTryOn.router)
+app.include_router(moustache_router)
+app.include_router(HairTryOnRouter)
+app.include_router(realtime_wristTryOn)
 # ---------------- Directories ----------------
 UPLOAD_FOLDER  = "uploads"
 TEMPLATES_DIR  = "data/templates"
@@ -216,20 +221,30 @@ async def apply_template(file: UploadFile = File(...), occasion: str = Form(...)
 
 # ---------------- Manual Makeup ----------------
 @app.post("/manual-makeup/")
-async def manual_makeup(file: UploadFile = File(...), category: str = Form(...), color: str = Form("#ff1744"),
-                        intensity: float = Form(1.0), shade: str = Form(None)):
+async def manual_makeup(
+    file: UploadFile = File(...),
+    category: str = Form(...),
+    color: str = Form("#ff1744"),
+    intensity: float = Form(1.0),
+    shade: str = Form(None)
+):
     try:
         contents = await file.read()
+        if not contents:
+            return JSONResponse(status_code=400, content={"error": "No file content received."})
+
         nparr = np.frombuffer(contents, np.uint8)
         img_bgr = cv2.imdecode(nparr, cv2.IMREAD_COLOR)
         if img_bgr is None:
-            raise ValueError("Failed to decode uploaded image.")
+            return JSONResponse(status_code=400, content={"error": "Invalid or corrupted image file."})
 
         out_bgr = apply_makeup_bgr(img_bgr, feature=category, color_hex=color, intensity=float(intensity))
         out_name = f"{category}_mp.png"
         out_path_abs = os.path.join(OUTPUT_DIR, out_name)
         cv2.imwrite(out_path_abs, out_bgr)
+
         return {"output_path": f"/output/{out_name}"}
+
     except Exception as e:
         tb = traceback.format_exc()
         return JSONResponse(status_code=500, content={"error": str(e), "trace": tb})
@@ -241,6 +256,104 @@ async def recommend_jewelry(file: UploadFile = File(...)):
         return jewellary_recommendation.recommend_jewelry_from_image(file.file)
     except Exception as e:
         tb = traceback.format_exc()
+        return JSONResponse(status_code=500, content={"error": str(e), "trace": tb})
+
+# ---------------- Prompt-Based Jewelry Try-On ----------------
+from fastapi.responses import JSONResponse
+import os, io, base64, time, traceback, requests
+from fastapi import UploadFile, File, Form
+from PIL import Image
+
+@app.post("/prompt-jewelry-tryon/")
+async def prompt_jewelry_tryon(file: UploadFile = File(...), prompt: str = Form(...)):
+    """
+    AI-powered Jewellery visualization using Gemini 2.0 Vision API.
+    Returns an image overlay result.
+    """
+    try:
+        # ✅ Load GEMINI API key from environment
+        GEMINI_API_KEY = os.environ.get("GEMINI_API_KEY")
+        if not GEMINI_API_KEY:
+            return JSONResponse(
+                status_code=400,
+                content={"error": "Gemini API key not set. Please set GEMINI_API_KEY in environment."}
+            )
+
+        GEMINI_URL = (
+            f"https://generativelanguage.googleapis.com/v1beta/models/"
+            f"gemini-2.0-flash:generateContent?key={GEMINI_API_KEY}"
+        )
+
+        # ✅ Validate uploaded image
+        image_bytes = await file.read()
+        Image.open(io.BytesIO(image_bytes))  # Raise exception if invalid
+
+        # ✅ Convert image to base64
+        image_base64 = base64.b64encode(image_bytes).decode("utf-8")
+
+        # ✅ Prepare Gemini payload
+        payload = {
+            "contents": [
+                {
+                    "parts": [
+                        {"text": prompt},
+                        {
+                            "inline_data": {
+                                "mime_type": file.content_type,
+                                "data": image_base64
+                            }
+                        },
+                    ]
+                }
+            ]
+        }
+
+        # ✅ Call Gemini API
+        response = requests.post(GEMINI_URL, json=payload)
+        result = response.json()
+
+        print("🔹 Gemini API Response:", result)
+
+        # ✅ Handle API key / request errors
+        if "error" in result:
+            err_msg = result["error"].get("message", "Unknown Gemini error")
+            return JSONResponse(
+                status_code=400,
+                content={"error": f"Gemini API error: {err_msg}", "details": result}
+            )
+
+        # ✅ Check for candidates
+        if "candidates" not in result or not result["candidates"]:
+            return JSONResponse(
+                status_code=500,
+                content={"error": "Gemini did not return any candidates", "details": result}
+            )
+
+        # ✅ Extract base64 image from Gemini response
+        image_data_b64 = result["candidates"][0].get("content", [{}])[0].get("image", None)
+        if not image_data_b64:
+            return JSONResponse(
+                status_code=500,
+                content={"error": "No image returned by Gemini", "details": result}
+            )
+
+        # ✅ Save image to output folder
+        tmp_path = os.path.join(OUTPUT_DIR, f"tryon_{int(time.time())}.png")
+        img_data = base64.b64decode(image_data_b64)
+        with open(tmp_path, "wb") as f:
+            f.write(img_data)
+
+        base_url = "http://127.0.0.1:8000"  # adjust if deployed elsewhere
+        result_url = f"{base_url}/output/{os.path.basename(tmp_path)}"
+
+        return {
+            "message": "✅ Jewelry prompt processed successfully!",
+            "result_image_url": result_url
+        }
+
+    except Exception as e:
+        tb = traceback.format_exc()
+        print("❌ Error in /prompt-jewelry-tryon/:\n", tb)
         return JSONResponse(status_code=500, content={"error": str(e), "trace": tb})
 
 # ---------------- Cap/Glasses Try-On ----------------
@@ -309,15 +422,10 @@ async def get_watches():
 @app.get("/available-watches")
 async def available_watches():
     try:
-        # Define the allowed watch filenames
         allowed_watches = {"watch1.png", "watch2.png", "watch3.png"}
-
-        # Get files from the folder
         files = os.listdir(UPLOAD_FOLDER)
-
-        # Filter only allowed ones
         watches = [f for f in files if f in allowed_watches]
-
         return {"watches": watches}
     except Exception as e:
         return JSONResponse(status_code=500, content={"error": str(e)})
+
