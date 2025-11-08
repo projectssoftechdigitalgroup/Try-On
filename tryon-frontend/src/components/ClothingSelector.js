@@ -94,29 +94,53 @@ const ClothingSelector = ({
   }, [currentGender, kidsSubGender, activeCategory, subCategory]);
 
   const handleSelect = async (item) => {
-    if (item.type === "tops") onTopChange(item.id);
-    else if (item.type === "bottoms") onBottomChange(item.id);
-    else if (item.type === "full_dress") onDressChange(item.id);
-
+    let newTop = selectedTop;
+    let newBottom = selectedBottom;
+    let newDress = selectedDress;
+  
+    // ✅ Top selected → update top, keep bottom, remove dress
+    if (item.type === "tops") {
+      newTop = item.id;
+      newDress = "none";
+    }
+  
+    // ✅ Bottom selected → update bottom, keep top, remove dress
+    else if (item.type === "bottoms") {
+      newBottom = item.id;
+      newDress = "none";
+    }
+  
+    // ✅ Full dress selected → hide both top & bottom
+    else if (item.type === "full_dress") {
+      newDress = item.id;
+      newTop = "none";
+      newBottom = "none";
+    }
+  
+    // Update React state
+    onTopChange(newTop);
+    onBottomChange(newBottom);
+    onDressChange(newDress);
+  
     const clothingData = {
       gender: item.gender,
-      top: item.type === "tops" ? item.id : "none",
-      bottom: item.type === "bottoms" ? item.id : "none",
-      dress: item.type === "full_dress" ? item.id : "none",
+      top: newTop,
+      bottom: newBottom,
+      dress: newDress,
     };
-
+  
     setStatus({ message: "Updating outfit...", type: "loading" });
-
+  
     try {
       const res = await fetch(`${API_BASE}/clothes/update`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(clothingData),
       });
-
+  
       if (!res.ok) throw new Error(`HTTP ${res.status}`);
       const data = await res.json();
-
+  
       setStatus({ message: "✅ Outfit updated successfully!", type: "success" });
       console.log("✅ Clothing updated:", data);
     } catch (err) {
@@ -125,14 +149,13 @@ const ClothingSelector = ({
         message: "❌ Failed to update outfit. Retrying...",
         type: "error",
       });
-
-      // Auto-retry once after 2 seconds
+  
       setTimeout(() => handleSelect(item), 2000);
     }
-
+  
     setTimeout(() => setStatus({ message: "", type: "" }), 4000);
   };
-
+  
   const GENDER_TABS = [
     { id: "male", label: "Male", icon: <User className="w-4 h-4" /> },
     { id: "female", label: "Female", icon: <Users className="w-4 h-4" /> },

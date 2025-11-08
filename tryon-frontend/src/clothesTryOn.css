@@ -2,273 +2,156 @@
 @import "tailwindcss/components";
 @import "tailwindcss/utilities";
 
-/* ========================= WRAPPER SCOPE ========================= */
-.tryon-page {
-  --background: #070712;
-  --foreground: #f1f5f9;
-  --card: rgba(255, 255, 255, 0.06);
-  --primary: #6d6fffe8;
-  --accent: #00d0ff;
-  --ring: #6d6fff;
+:root {
+  --background: #0a0a0a;
+  --foreground: #ffffff;
+  --card: #1a1a1a;
+  --card-foreground: #ffffff;
+  --primary: #8b5cf6;
+  --primary-foreground: #ffffff;
+  --secondary: #262626;
+  --secondary-foreground: #ffffff;
+  --muted: #262626;
+  --muted-foreground: #a3a3a3;
+  --accent: #06b6d4;
+  --accent-foreground: #ffffff;
+  --border: #404040;
+  --input: #404040;
+  --ring: #8b5cf6;
+}
 
-  background: linear-gradient(135deg, #06060d 0%, #0b0f24 50%, #11182e 100%);
+body {
+  background: var(--background);
   color: var(--foreground);
-  min-height: 100vh;
-  overflow-x: hidden;
-  animation: fadeInBody 0.8s ease-out;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Roboto", sans-serif;
 }
 
-@keyframes fadeInBody {
-  from { opacity: 0; transform: translateY(20px); }
-  to { opacity: 1; transform: translateY(0); }
+/* Enhanced custom scrollbar with better styling */
+::-webkit-scrollbar {
+  width: 8px;
 }
 
-/* ========================= HERO TITLE ========================= */
-.tryon-page h1 {
-  font-weight: 700;
-  letter-spacing: .5px;
-  text-shadow: 0 0 25px rgba(109, 110, 255, 0.5),
-               0 0 50px rgba(0, 208, 255, 0.3);
-}
-
-/* ========================= CARD / PANEL STYLE ========================= */
-.tryon-page .glass,
-.tryon-page .bg-white\/10 {
-  background: rgba(255, 255, 255, 0.07) !important;
-  backdrop-filter: blur(22px);
-  border-radius: 22px;
-  border: 1px solid rgba(109, 110, 255, 0.25);
-  box-shadow:
-    0 0 25px rgba(109, 110, 255, 0.25),
-    inset 0 0 15px rgba(0, 208, 255, 0.15);
-  transition: all .35s ease;
-  overflow: hidden;
-}
-
-.tryon-page .glass:hover,
-.tryon-page .bg-white\/10:hover {
-  transform: translateY(-6px);
-  box-shadow:
-    0 0 45px rgba(109, 110, 255, 0.55),
-    inset 0 0 25px rgba(0, 208, 255, 0.25);
-}
-
-/* ========================= VIDEO FRAME ========================= */
-.tryon-page .video-frame,
-.tryon-page .relative.rounded-2xl {
-  border-radius: 28px;
-  overflow: hidden;
-  border: 2px solid rgba(109, 110, 255, 0.45);
-  background: rgba(109, 110, 255, 0.12);
-  box-shadow:
-    0 0 50px rgba(109, 110, 255, 0.4),
-    inset 0 0 35px rgba(0, 208, 255, 0.25);
-  animation: videoGlow 3s ease-in-out infinite;
-}
-
-
-
-/* ========================= BUTTONS ========================= */
-.tryon-page button {
-  background: linear-gradient(135deg, var(--primary), var(--accent));
-  padding: 12px 26px;
-  border-radius: 14px;
-  font-weight: 600;
-  border: none;
-  cursor: pointer;
-  color: #fff;
-  box-shadow:
-    0 0 18px rgba(109, 110, 255, 0.55),
-    inset 0 0 14px rgba(0,208,255,0.25);
-  transition: all 0.35s ease;
-}
-
-.tryon-page button:hover {
-  transform: translateY(-3px) scale(1.05);
-  box-shadow:
-    0 0 32px rgba(109, 110, 255, 0.85),
-    inset 0 0 20px rgba(0,208,255,0.35);
-}
-
-/* ========================= CLOTHING CATEGORY BUTTONS ========================= */
-.tryon-page .category-btn {
-  padding: 10px 22px;
-  border-radius: 14px;
-  font-weight: 500;
-  background: rgba(255,255,255,0.05);
-  border: 1px solid rgba(109, 110, 255, 0.25);
-  color: var(--foreground);
-  transition: all .3s ease;
-}
-
-.tryon-page .category-btn:hover {
-  background: linear-gradient(135deg, var(--primary), var(--accent));
-  box-shadow: 0 0 22px rgba(109,110,255,.55);
-  color: white;
-  transform: translateY(-3px);
-}
-
-.tryon-page .category-btn.active {
-  background: linear-gradient(135deg, var(--accent), var(--primary));
-  box-shadow: 0 0 33px rgba(109,110,255,.9);
-  color: white;
-}
-
-/* ========================= FLOATING ANIMATIONS ========================= */
-.tryon-page .float {
-  animation: float 3s ease-in-out infinite;
-}
-@keyframes float {
-  0%,100% { transform: translateY(0); }
-  50% { transform: translateY(-8px); }
-}
-
-/* ========================= HOW IT WORKS CARD – NEW STYLE ========================= */
-.tryon-page .how-it-works {
-  background: rgba(255, 255, 255, 0.06);
-  backdrop-filter: blur(18px);
-  border-radius: 28px;
-  border: 1px solid rgba(109, 110, 255, 0.25);
-  box-shadow:
-    0 0 25px rgba(109, 110, 255, 0.25),
-    inset 0 0 20px rgba(0, 208, 255, 0.15);
-  padding: 42px 48px;
-  transition: all 0.35s ease;
-}
-
-/* ========================= OUTFIT SELECTOR GRID ========================= */
-.tryon-page .clothing-grid {
-  display: flex;
-  gap: 22px;
-  padding-top: 18px;
-  overflow-x: auto;
-  scroll-snap-type: x mandatory;
-  padding-bottom: 12px;
-}
-
-.tryon-page .clothing-grid::-webkit-scrollbar {
-  height: 7px;
-}
-
-.tryon-page .clothing-grid::-webkit-scrollbar-track {
-  background: rgba(255,255,255,0.07);
+::-webkit-scrollbar-track {
+  background: var(--muted);
   border-radius: 10px;
 }
 
-.tryon-page .clothing-grid::-webkit-scrollbar-thumb {
-  background: linear-gradient(135deg, #6d6fff, #00d0ff);
+::-webkit-scrollbar-thumb {
+  background: linear-gradient(180deg, var(--primary), var(--accent));
   border-radius: 10px;
+  transition: all 0.3s ease;
 }
 
-/* INDIVIDUAL ITEM CARD */
-.tryon-page .clothing-item {
-  min-width: 180px;
-  max-width: 180px;
+::-webkit-scrollbar-thumb:hover {
+  background: linear-gradient(180deg, var(--accent), var(--primary));
+  box-shadow: 0 0 10px rgba(139, 92, 246, 0.3);
+}
+
+.custom-scrollbar::-webkit-scrollbar {
+  width: 6px;
+}
+
+.custom-scrollbar::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.custom-scrollbar::-webkit-scrollbar-thumb {
+  background: rgba(139, 92, 246, 0.3);
+  border-radius: 3px;
+}
+
+.custom-scrollbar::-webkit-scrollbar-thumb:hover {
+  background: rgba(139, 92, 246, 0.6);
+}
+
+/* Enhanced glassmorphism effect with better blur and transparency */
+.glass {
+  background: rgba(255, 255, 255, 0.05);
+  backdrop-filter: blur(12px);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.glass-strong {
   background: rgba(255, 255, 255, 0.08);
-  border: 1px solid rgba(109, 110, 255, 0.25);
-  border-radius: 18px;
-  padding: 18px 14px;
-  cursor: pointer;
-  scroll-snap-align: start;
-  text-align: center;
-  transition: all .35s ease;
-  box-shadow:
-    0 0 12px rgba(109, 110, 255, 0.25),
-    inset 0 0 12px rgba(0, 208, 255, 0.15);
+  backdrop-filter: blur(16px);
+  border: 1px solid rgba(255, 255, 255, 0.15);
 }
 
-.tryon-page .clothing-item:hover {
-  transform: translateY(-6px);
-  box-shadow:
-    0 0 35px rgba(109,110,255,.55),
-    inset 0 0 20px rgba(0,208,255,0.25);
+/* Gradient text with better color stops */
+.gradient-text {
+  background: linear-gradient(135deg, var(--primary), var(--accent));
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
 }
 
-/* ITEM IMAGE */
-.tryon-page .clothing-item img {
+/* Enhanced pulse animation for active states */
+@keyframes pulse-glow {
+  0%,
+  100% {
+    box-shadow: 0 0 20px rgba(139, 92, 246, 0.3), inset 0 0 20px rgba(139, 92, 246, 0.1);
+  }
+  50% {
+    box-shadow: 0 0 40px rgba(139, 92, 246, 0.6), inset 0 0 20px rgba(139, 92, 246, 0.2);
+  }
+}
+
+.pulse-glow {
+  animation: pulse-glow 2s ease-in-out infinite;
+}
+
+/* Added smooth scale animation for hover effects */
+@keyframes smooth-scale {
+  0% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.02);
+  }
+  100% {
+    transform: scale(1);
+  }
+}
+
+.hover\:scale-102:hover {
+  transform: scale(1.02);
+  transition: transform 0.3s ease;
+}
+
+/* Enhanced 3D card effect */
+.card-3d {
+  perspective: 1000px;
+  transition: all 0.3s ease;
+}
+
+.card-3d:hover {
+  transform: translateY(-4px);
+}
+
+/* Video container styling */
+.video-container {
+  position: relative;
   width: 100%;
-  height: 140px;
-  object-fit: contain;
-  border-radius: 10px;
-  transition: transform .35s ease;
 }
 
-.tryon-page .clothing-item:hover img {
-  transform: scale(1.10);
+.video-inner {
+  position: relative;
+  width: 100%;
 }
 
-/* ITEM TITLE */
-.tryon-page .clothing-item p {
-  margin-top: 14px;
-  font-size: 1rem;
-  font-weight: 500;
-  color: #ffffff;
+/* Smooth transitions for all interactive elements */
+* {
+  transition: background-color 0.3s ease, border-color 0.3s ease, color 0.3s ease;
 }
 
-/* ACTIVE SELECTED ITEM */
-.tryon-page .clothing-item.active {
-  border: 2px solid var(--accent);
-  transform: scale(1.08);
-  box-shadow:
-    0 0 44px rgba(0,208,255,.85),
-    inset 0 0 25px rgba(0,208,255,.45);
+button,
+a {
+  transition: all 0.3s ease;
 }
 
-.tryon-page .how-it-works {
-  background: rgba(255, 255, 255, 0.06);
-  backdrop-filter: blur(18px);
-  border-radius: 28px;
-  border: 1px solid rgba(109, 110, 255, 0.25);
-  box-shadow:
-    0 0 25px rgba(109, 110, 255, 0.25),
-    inset 0 0 20px rgba(0, 208, 255, 0.15);
-  padding: 42px 48px;
-  transition: all 0.35s ease;
-}
-
-.tryon-page .how-it-works:hover {
-  transform: translateY(-6px);
-  box-shadow:
-    0 0 45px rgba(109, 110, 255, 0.55),
-    inset 0 0 30px rgba(0, 208, 255, 0.25);
-}
-
-.tryon-page .how-it-works h3 {
-  font-size: 2rem;
-  font-weight: 700;
-  background: linear-gradient(135deg, #6d6fff, #00d0ff);
-  margin-bottom: 32px;
-  text-align: center;
-  color:#ffffff
-}
-
-.tryon-page .how-step {
-  display: flex;
-  align-items: center;
-  gap: 18px;
-  margin-bottom: 20px;
-  color: #e2e8f0;
-  font-size: 1.1rem;
-  font-weight: 500;
-}
-
-.tryon-page .how-step .step-badge {
-  width: 42px;
-  height: 42px;
-  border-radius: 50%;
-  font-weight: 700;
-  font-size: 1rem;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-
-  background: linear-gradient(135deg, #6d6fff, #00d0ff);
-  box-shadow: 0 0 25px rgba(109, 110, 255, .55);
-  color: white;
-  transition: transform .3s ease, box-shadow .3s ease;
-}
-
-.tryon-page .how-step:hover .step-badge {
-  transform: scale(1.15);
-  box-shadow: 0 0 40px rgba(109, 110, 255, .85);
+/* Enhanced focus states for accessibility */
+button:focus-visible,
+a:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
 }

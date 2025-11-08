@@ -172,7 +172,7 @@ def generate_hair_with_gemini(image_bytes: bytes, prompt: str):
         return {"error": str(e)}
 
 # ======================================================
-# 🎨 1. Local Haar-based Try-On
+# 🎨 1. Local Hair-based Try-On
 # ======================================================
 @router.post("/hair")
 async def tryon_hair(image: UploadFile, style_name: str = Form(...)):
@@ -206,7 +206,7 @@ async def tryon_hair(image: UploadFile, style_name: str = Form(...)):
         _, img_encoded = cv2.imencode(".png", blended_img)
         return Response(content=img_encoded.tobytes(), media_type="image/png")
     except Exception:
-        logging.error("❌ Haar Try-On Error:\n" + traceback.format_exc())
+        logging.error("❌ Hair Try-On Error:\n" + traceback.format_exc())
         return JSONResponse({"error": "Unexpected Haar try-on failure."}, status_code=500)
 
 # ======================================================

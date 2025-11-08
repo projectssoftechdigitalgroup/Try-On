@@ -9,6 +9,7 @@ import random
 from fastapi import APIRouter
 from fastapi.responses import StreamingResponse
 from pydantic import BaseModel
+from typing import Optional
 
 router = APIRouter(prefix="/clothes", tags=["Clothes Try-On"])
 
@@ -87,25 +88,32 @@ CLOTHING_DATA = {
     "kg_skirt2": os.path.join(DATABASE_PATH, "kids", "girl", "Eastern-Wear", "skirt2.png"),
 }
 
-
 # -------------------------------
 # Load Clothing Images
 # -------------------------------
 def load_clothing_images():
+    """
+    Loads top_img, bottom_img, dress_img and sets top_type/bottom_type/dress_type/gender_type
+    Uses placeholders when files missing to avoid crashes.
+    """
     global top_img, bottom_img, dress_img, top_type, bottom_type, dress_type, gender_type
     gender_type = current_selection.gender
     top_type = current_selection.top
     bottom_type = current_selection.bottom
     dress_type = current_selection.dress
 
-    def get_image(path_entry):
+    def get_image(path_entry: Optional[str]):
+        # if path_entry is list choose at random (for multiple variants)
         if isinstance(path_entry, list):
-            path_entry = random.choice(path_entry)
-        if not path_entry:
+            path_entry_local = random.choice(path_entry)
+        else:
+            path_entry_local = path_entry
+
+        if not path_entry_local:
             return None
-        if not os.path.exists(path_entry):
+        if not os.path.exists(path_entry_local):
             return None
-        img = cv2.imread(path_entry, cv2.IMREAD_UNCHANGED)
+        img = cv2.imread(path_entry_local, cv2.IMREAD_UNCHANGED)
         return img
 
     top_path = CLOTHING_DATA.get(top_type)
@@ -160,11 +168,18 @@ landmark_names = {
 # -------------------------------
 # Overlay Helper
 # -------------------------------
-def overlay_transparent(background, overlay, x, y):
-    h, w = overlay.shape[:2]
-    if overlay.shape[2] < 4:
+def overlay_transparent(background: np.ndarray, overlay: np.ndarray, x: int, y: int) -> np.ndarray:
+    """
+    Overlays `overlay` (RGBA) onto `background` (BGR) at position (x,y).
+    Returns modified background. If overlay has no alpha channel or
+    sizes mismatch it'll try to handle gracefully.
+    """
+    if overlay is None:
         return background
 
+    h, w = overlay.shape[:2]
+
+    # bounds checks + cropping the overlay if it goes out of frame
     if x >= background.shape[1] or y >= background.shape[0]:
         return background
 
@@ -184,9 +199,18 @@ def overlay_transparent(background, overlay, x, y):
         h = background.shape[0] - y
         overlay = overlay[:h, :]
 
+    # require alpha channel
+    if overlay.shape[2] < 4:
+        return background
+
     overlay_img = overlay[:, :, :3]
     mask = overlay[:, :, 3:] / 255.0
+
     roi = background[y:y+h, x:x+w]
+    # if sizes differ unexpectedly, skip to avoid crashing
+    if roi.shape[:2] != overlay_img.shape[:2]:
+        return background
+
     blended = (1.0 - mask) * roi + mask * overlay_img
     background[y:y+h, x:x+w] = blended.astype(np.uint8)
     return background
@@ -195,7 +219,7 @@ def overlay_transparent(background, overlay, x, y):
 # -------------------------------
 # Cloth Placement Logic
 # -------------------------------
-def place_cloth(frame, cloth_img, cloth_type, get_point):
+def place_cloth(frame: np.ndarray, cloth_img: np.ndarray, cloth_type: str, get_point) -> np.ndarray:
     if cloth_img is None or cloth_type == "none":
         return frame
 
@@ -207,8 +231,8 @@ def place_cloth(frame, cloth_img, cloth_type, get_point):
         hip_w = np.linalg.norm(np.array(r_hip) - np.array(l_hip))
         leg_h = np.linalg.norm(np.array(l_toe) - np.array(l_hip))
 
-        new_w = int(hip_w * 2.2)
-        new_h = int(leg_h * 1.1)
+        new_w = max(1, int(hip_w * 2.2))
+        new_h = max(1, int(leg_h * 1.1))
 
         resized = cv2.resize(cloth_img, (new_w, new_h))
         cx = int((l_hip[0] + r_hip[0]) / 2 - new_w / 2)
@@ -224,8 +248,8 @@ def place_cloth(frame, cloth_img, cloth_type, get_point):
         shoulder_w = np.linalg.norm(np.array(r_sh) - np.array(l_sh))
         torso_h = np.linalg.norm(np.array(l_hip) - np.array(l_sh))
 
-        new_w = int(shoulder_w * 2.0)
-        new_h = int(torso_h * 1.4)
+        new_w = max(1, int(shoulder_w * 2.0))
+        new_h = max(1, int(torso_h * 1.4))
 
         resized = cv2.resize(cloth_img, (new_w, new_h))
         cx = int((l_sh[0] + r_sh[0]) / 2 - new_w / 2)
@@ -240,7 +264,7 @@ def place_cloth(frame, cloth_img, cloth_type, get_point):
 
         shoulder_w = np.linalg.norm(np.array(r_sh) - np.array(l_sh))
         dress_h = np.linalg.norm(np.array(l_toe) - np.array(l_sh)) * 1.1
-        dress_w = shoulder_w * 4.0
+        dress_w = max(1, int(shoulder_w * 4.0))
 
         resized = cv2.resize(cloth_img, (int(dress_w), int(dress_h)))
         cx = int((l_sh[0] + r_sh[0]) / 2 - dress_w / 2)
@@ -248,21 +272,8 @@ def place_cloth(frame, cloth_img, cloth_type, get_point):
 
         return overlay_transparent(frame, resized, cx, cy)
 
+    # default fallback: return frame unchanged
     return frame
-
-    l_sh, r_sh = get_point("l_shoulder"), get_point("r_shoulder")
-    l_hip, r_hip = get_point("l_hip"), get_point("r_hip")
-    l_toe, r_toe = get_point("l_toe"), get_point("r_toe")
-
-    shoulder_w = np.linalg.norm(np.array(r_sh) - np.array(l_sh))
-    torso_h = np.linalg.norm(np.array(l_hip) - np.array(l_sh))
-
-    new_w, new_h = int(shoulder_w * 2.2), int(torso_h * 1.5)
-    resized = cv2.resize(cloth_img, (new_w, new_h))
-    cx = int((l_sh[0] + r_sh[0]) / 2 - new_w / 2)
-    cy = int(min(l_sh[1], r_sh[1])) - int(new_h * 0.15)
-
-    return overlay_transparent(frame, resized, cx, cy)
 
 
 # -------------------------------
@@ -272,29 +283,40 @@ def cloth_overlay(frame):
     h, w = frame.shape[:2]
     rgb = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
     results = pose.process(rgb)
-    if not results.pose_landmarks:
-        return frame
 
-    lm = results.pose_landmarks.landmark
-    get_point = lambda name: (int(lm[landmark_names[name]].x * w), int(lm[landmark_names[name]].y * h))
+    if results.pose_landmarks:
+        lm = results.pose_landmarks.landmark
 
-    orig_frame = frame.copy()
+        def get_point(name):
+            idx = landmark_names[name]
+            return int(lm[idx].x * w), int(lm[idx].y * h)
 
-    if current_selection.dress != "none":
-        frame = place_cloth(frame, dress_img, current_selection.dress, get_point)
-    else:
-        if current_selection.bottom != "none":
-            frame = place_cloth(frame, bottom_img, current_selection.bottom, get_point)
-        if current_selection.top != "none":
-            frame = place_cloth(frame, top_img, current_selection.top, get_point)
+        orig_frame = frame.copy()
 
-    # Restore neck area
-    l_sh, r_sh = get_point("l_shoulder"), get_point("r_shoulder")
-    neck_center = ((l_sh[0] + r_sh[0]) // 2, min(l_sh[1], r_sh[1]) - 55)
-    mask = np.zeros(frame.shape[:2], dtype=np.uint8)
-    neck_width = abs(r_sh[0] - l_sh[0]) // 5
-    cv2.ellipse(mask, neck_center, (neck_width, neck_width), 0, 0, 180, 255, -1)
-    frame[mask == 255] = orig_frame[mask == 255]
+        # ✅ Make bottom ALWAYS visible (if exists)
+        if bottom_type != "none" and bottom_img is not None:
+            frame = place_cloth(frame, bottom_img, bottom_type, get_point)
+
+        # ✅ Make top ALWAYS visible (if exists)
+        if top_type != "none" and top_img is not None:
+            frame = place_cloth(frame, top_img, top_type, get_point)
+
+        # ✅ If dress selected, overlay it ON TOP (does NOT remove top/bottom)
+        if dress_type != "none" and dress_img is not None:
+            frame = place_cloth(frame, dress_img, dress_type, get_point)
+
+        # ✅ Restore neck
+        try:
+            l_sh = get_point("l_shoulder")
+            r_sh = get_point("r_shoulder")
+            neck_center = ((l_sh[0] + r_sh[0]) // 2, min(l_sh[1], r_sh[1]) - 55)
+
+            mask = np.zeros(frame.shape[:2], dtype=np.uint8)
+            neck_width = max(2, abs(r_sh[0] - l_sh[0]) // 5)
+            cv2.ellipse(mask, neck_center, (neck_width, neck_width), 0, 0, 180, 255, -1)
+            frame[mask == 255] = orig_frame[mask == 255]
+        except:
+            pass
 
     return frame
 
@@ -304,15 +326,21 @@ def cloth_overlay(frame):
 # -------------------------------
 def gen_frames():
     cap = cv2.VideoCapture(0)
-    while True:
-        ret, frame = cap.read()
-        if not ret:
-            break
-        frame = cv2.flip(frame, 1)
-        frame = cloth_overlay(frame)
-        _, buffer = cv2.imencode(".jpg", frame)
-        yield (b"--frame\r\n"
-               b"Content-Type: image/jpeg\r\n\r\n" + buffer.tobytes() + b"\r\n")
+    try:
+        while True:
+            ret, frame = cap.read()
+            if not ret:
+                break
+            frame = cv2.flip(frame, 1)
+            frame = cloth_overlay(frame)
+            _, buffer = cv2.imencode(".jpg", frame)
+            yield (b"--frame\r\n"
+                   b"Content-Type: image/jpeg\r\n\r\n" + buffer.tobytes() + b"\r\n")
+    finally:
+        try:
+            cap.release()
+        except Exception:
+            pass
 
 
 # -------------------------------
@@ -323,6 +351,7 @@ async def update_clothing(selection: ClothingSelection):
     global current_selection
     current_selection = selection
     load_clothing_images()
+    # return selection directly (Pydantic dict)
     return {"status": "success", **selection.dict()}
 
 
@@ -334,5 +363,4 @@ async def health_check():
 @router.get("/video")
 def video_feed():
     return StreamingResponse(gen_frames(), media_type="multipart/x-mixed-replace; boundary=frame")
-
-
+  

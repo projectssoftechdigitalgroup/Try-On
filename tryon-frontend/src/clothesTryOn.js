@@ -30,44 +30,51 @@ function App() {
   }, []);
 
   return (
-    <div className="tryon-page">
-
-      {/* ===== HEADER ===== */}
+    <div className="min-h-screen bg-black text-white flex flex-col overflow-y-auto custom-scrollbar">
+      
+      {/* HEADER */}
       <Header />
 
-      {/* ===== HERO SECTION ===== */}
-      <section className="hero-section">
-        <h1 className="hero-title">IMMERSIVE VIRTUAL TRY-ON</h1>
-        <p className="hero-subtext">
-          Step into the future of fashion with <span>AI-powered virtual try-on</span> —
-          personalize your style and preview your look in real-time.
+      {/* HERO */}
+      <section className="text-center py-32 relative">
+        <div className="absolute inset-0 bg-gradient-to-b from-purple-600/10 to-transparent blur-[160px]" />
+        
+        <h1 className="text-5xl md:text-7xl lg:text-8xl font-extrabold tracking-tight gradient-text drop-shadow-xl">
+          Virtual Try-On Studio
+        </h1>
+
+        <p className="text-gray-300 text-lg mt-6 max-w-3xl mx-auto">
+          Experience next-generation fashion preview — powered by 
+          <span className="text-purple-400 font-semibold"> real-time AI styling.</span>
         </p>
       </section>
 
-      {/* ===== MAIN CONTENT ===== */}
-      <main className="main-container">
+      {/* MAIN */}
+      <main className="flex flex-col gap-16 items-center px-6 pb-32">
 
-        {/* === VIDEO PREVIEW PANEL === */}
-        <div className="panel video-panel">
-          <div className="panel-header">
-            <h2>Virtual Try-On Studio</h2>
+        {/* VIDEO FEED */}
+        <div className="glass-strong w-full max-w-6xl rounded-3xl p-10 border border-white/10 shadow-[0_0_25px_rgba(139,92,246,0.3)] card-3d">
+          <div className="flex justify-between items-center mb-8">
+            <h2 className="text-3xl font-bold gradient-text">Live Try-On Preview</h2>
             <StatusIndicator isConnected={isConnected} />
           </div>
 
-          <div className="video-frame">
-            <VideoFeed
-              isConnected={isConnected}
-              selectedTop={selectedTop}
-              selectedBottom={selectedBottom}
-              selectedDress={selectedDress}
-              selectedCategory={selectedCategory}
-            />
+          <div className="rounded-2xl overflow-hidden border border-white/20 video-container bg-black/60 p-[3px]">
+            <div className="video-inner rounded-xl overflow-hidden">
+              <VideoFeed
+                isConnected={isConnected}
+                selectedTop={selectedTop}
+                selectedBottom={selectedBottom}
+                selectedDress={selectedDress}
+                selectedCategory={selectedCategory}
+              />
+            </div>
           </div>
         </div>
 
-        {/* === OUTFIT SELECTOR PANEL === */}
-        <div className="panel selector-panel">
-          <h3>Choose Your Outfit</h3>
+        {/* SELECTOR */}
+        <div className="glass w-full max-w-4xl rounded-3xl p-10 border border-white/10 card-3d">
+          <h3 className="text-2xl mb-8 font-semibold gradient-text">Choose Your Outfit</h3>
 
           <ClothingSelector
             selectedTop={selectedTop}
@@ -81,32 +88,31 @@ function App() {
           />
         </div>
 
-        {/* === HOW IT WORKS PANEL === */}
-        <div className="panel how-it-works">
-          <h3>How It Works</h3>
+        {/* HOW IT WORKS */}
+        <div className="glass w-full max-w-3xl rounded-3xl border border-white/10 p-10 card-3d">
+          <h3 className="text-2xl font-semibold mb-10 gradient-text">How It Works</h3>
 
-          <div className="how-step">
-            <div className="step-badge">1</div>
-            <span>Stand in front of your camera clearly</span>
-          </div>
-
-          <div className="how-step">
-            <div className="step-badge">2</div>
-            <span>Select an outfit from the options</span>
-          </div>
-
-          <div className="how-step">
-            <div className="step-badge">3</div>
-            <span>See your chosen style appear instantly!</span>
-          </div>
+          {[
+            "Stand clearly in front of the camera",
+            "Select the outfit you want to preview",
+            "The AI will overlay your selected style in real-time"
+          ].map((step, index) => (
+            <div key={index} className="flex items-start gap-5 mb-6 group">
+              <div className="w-10 h-10 flex items-center justify-center rounded-full bg-gradient-to-br from-purple-500 to-cyan-400 text-white font-bold shadow-lg group-hover:scale-110 transition">
+                {index + 1}
+              </div>
+              <p className="text-gray-300 pt-1 leading-relaxed">{step}</p>
+            </div>
+          ))}
         </div>
 
       </main>
 
-      {/* ===== FOOTER ===== */}
-      <footer className="footer">
-        © {new Date().getFullYear()} Virtual Try-On by Hussain Kazmi. All rights reserved.
+      {/* FOOTER */}
+      <footer className="text-center text-gray-500 py-6 text-sm border-t border-white/10">
+        © {new Date().getFullYear()} Virtual Try-On by Hussain Kazmi — Futuristic Fashion UI ✨
       </footer>
+
     </div>
   );
 }
