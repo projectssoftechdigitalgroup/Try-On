@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <link rel="icon" href="%PUBLIC_URL%/favicon.ico" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="theme-color" content="#000000" />
+    <meta
+      name="description"
+      content="Virtual Try-On AR App - Try on Eastern and Traditional Wear virtually using your webcam"
+    />
+
+    <title>Virtual Try-On AR</title>
+
+    <!-- ✅ Include TailwindCSS (for styling consistency) -->
+    <script src="https://cdn.tailwindcss.com"></script>
+
+    <!-- ✅ Optional: Google Fonts for better UI look -->
+    <link
+      href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600&display=swap"
+      rel="stylesheet"
+    />
+
+    <!-- ✅ AR and Camera permissions meta -->
+    <meta http-equiv="Permissions-Policy" content="camera=(), microphone=()" />
+
+    <!-- ✅ Fallback background styling -->
+    <style>
+      body {
+        font-family: "Poppins", sans-serif;
+        background-color: #f9fafb;
+        color: #111827;
+        margin: 0;
+        padding: 0;
+      }
+      #root {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        height: 100vh;
+      }
+    </style>
+  </head>
+
+  <body>
+    <noscript>You need to enable JavaScript to run this app.</noscript>
+    <div id="root"></div>
+
+    <!-- ✅ React app script -->
+    <script src="%PUBLIC_URL%/index.js"></script>
+  </body>
+</html>

@@ -1,0 +1,174 @@
+@import "tailwindcss";
+@import "tw-animate-css";
+
+/* ========== GLOBAL COLOR VARIABLES ========== */
+:root {
+  --background: 15 15 20;
+  --foreground: 255 255 255;
+  --accent1: 236 72 153; /* pink */
+  --accent2: 168 85 247; /* purple */
+  --accent3: 59 130 246; /* blue */
+  --glass-bg: rgba(255, 255, 255, 0.08);
+  --glass-border: rgba(255, 255, 255, 0.15);
+  --radius: 0.75rem;
+}
+
+.dark {
+  --background: 5 5 10;
+  --foreground: 245 245 255;
+  --glass-bg: rgba(255, 255, 255, 0.04);
+  --glass-border: rgba(255, 255, 255, 0.1);
+}
+
+/* ========== BASE STYLING ========== */
+@layer base {
+  * {
+    @apply border-border outline-ring/50;
+    transition: all 0.25s ease-in-out;
+  }
+
+  body {
+    @apply min-h-screen font-sans bg-background text-foreground;
+    background: radial-gradient(
+      circle at top left,
+      rgba(236, 72, 153, 0.08),
+      rgba(59, 130, 246, 0.05)
+    ),
+    radial-gradient(
+      circle at bottom right,
+      rgba(168, 85, 247, 0.08),
+      rgba(15, 15, 20, 1)
+    );
+    background-attachment: fixed;
+    font-feature-settings: "rlig" 1, "calt" 1;
+    overflow-x: hidden;
+  }
+}
+
+/* ========== SCROLLBAR ========== */
+::-webkit-scrollbar {
+  width: 8px;
+}
+::-webkit-scrollbar-track {
+  background: rgba(255, 255, 255, 0.05);
+}
+::-webkit-scrollbar-thumb {
+  background: linear-gradient(
+    180deg,
+    rgb(var(--accent1)),
+    rgb(var(--accent2))
+  );
+  border-radius: 6px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: linear-gradient(
+    180deg,
+    rgb(var(--accent2)),
+    rgb(var(--accent3))
+  );
+}
+
+/* ========== GLASS EFFECT ========== */
+.glass {
+  background: var(--glass-bg);
+  backdrop-filter: blur(12px);
+  border: 1px solid var(--glass-border);
+  border-radius: var(--radius);
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
+  transition: 0.3s ease;
+}
+.glass:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 25px rgba(168, 85, 247, 0.25);
+}
+
+/* ========== GRADIENT TEXT & BORDER ========== */
+.gradient-text {
+  background: linear-gradient(
+    135deg,
+    rgb(var(--accent1)),
+    rgb(var(--accent2)),
+    rgb(var(--accent3))
+  );
+  background-size: 200% 200%;
+  animation: gradientShift 6s ease infinite;
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+@keyframes gradientShift {
+  0% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+  100% { background-position: 0% 50%; }
+}
+
+.gradient-border {
+  position: relative;
+  border-radius: var(--radius);
+  background: linear-gradient(
+    135deg,
+    rgb(var(--accent1)),
+    rgb(var(--accent2)),
+    rgb(var(--accent3))
+  );
+  padding: 2px;
+}
+.gradient-border > * {
+  background: rgba(15, 15, 20, 0.9);
+  border-radius: var(--radius);
+  padding: 1rem;
+}
+
+/* ========== BUTTONS ========== */
+.btn-glow {
+  background: linear-gradient(90deg, rgb(var(--accent1)), rgb(var(--accent2)));
+  color: white;
+  border: none;
+  padding: 0.6rem 1.3rem;
+  border-radius: 9999px;
+  font-weight: 600;
+  letter-spacing: 0.5px;
+  box-shadow: 0 0 15px rgba(168, 85, 247, 0.4);
+  transition: all 0.3s ease-in-out;
+}
+.btn-glow:hover {
+  background: linear-gradient(90deg, rgb(var(--accent2)), rgb(var(--accent3)));
+  box-shadow: 0 0 25px rgba(168, 85, 247, 0.8);
+  transform: scale(1.05);
+}
+
+/* ========== ANIMATIONS ========== */
+@keyframes pulse-glow {
+  0%, 100% { box-shadow: 0 0 25px rgba(236, 72, 153, 0.4); }
+  50% { box-shadow: 0 0 35px rgba(168, 85, 247, 0.7); }
+}
+.pulse-glow {
+  animation: pulse-glow 2s ease-in-out infinite;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(-10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+.animate-fadeIn {
+  animation: fadeIn 0.5s ease-in-out forwards;
+}
+
+/* ========== LINK HOVER GLOW ========== */
+a {
+  text-decoration: none;
+  position: relative;
+  color: white;
+}
+a::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  bottom: -2px;
+  height: 2px;
+  width: 0%;
+  background: linear-gradient(90deg, rgb(var(--accent1)), rgb(var(--accent2)));
+  transition: width 0.3s ease;
+}
+a:hover::after {
+  width: 100%;
+}
